@@ -53,6 +53,9 @@ wig20 <- read.csv("wig20_d.csv",
                      sep = ",",
                      dec = ".",
                      stringsAsFactors = F)
+wig20 <- na.locf(wig20)
+
+
 kospi200 <- read.csv("^kospi_d.csv",
                      header = TRUE,
                      sep = ",",
@@ -89,11 +92,37 @@ str(DAX)
 SP500 <- SP500[, 4]
 names(SP500) <- "SP500"
 
-# Also, we will add log-returns to the data
+# add log-returns to the data
 
 SP500$r <- diff.xts(log(SP500$SP500))
 
-# Finally, we limit our data to days since the beginning of 2008:
+# Finally, limit our data to days since the beginning of 2008:
 
 SP500 <- SP500["2008/",] 
 
+# Now, let's plot the close price 
+
+plot(SP500$SP500,
+     col = "blue",
+     major.ticks = "years", 
+     grid.ticks.on = "years",
+     grid.ticks.lty = 3,
+     main = "Daily close price of SP500")
+
+# ... and it's log-returns:
+
+plot(SP500$r, 
+     col = "red",
+     major.ticks = "years", 
+     grid.ticks.on = "years",
+     main = "Log-returns of SP500")
+
+# Let's also plot the ACF function of log-returns:
+
+acf(SP500$r, 
+    lag.max = 36, 
+    na.action = na.pass,
+    ylim = c(-0.1,0.1), # we rescale the vertical axis
+    col = "darkblue", 
+    lwd = 7, 
+    main = "ACF of log-returns of SP500")
