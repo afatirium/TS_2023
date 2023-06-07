@@ -5,6 +5,7 @@
 #install.packages("lubridate")
 #install.packages("BatchGetSymbols")
 
+library(dplyr)
 library(tidyverse)
 library(xts)
 library(zoo)
@@ -70,3 +71,10 @@ head(nikkei225)
 head(SP500)
 head(DAX)
 
+## change date as row index
+wig20 <- xts(wig20[, -1], # data columns (without the first column with date)
+                order.by = as.Date(wig20$Date))
+kospi200 <- xts(kospi200[, -1], # data columns (without the first column with date)
+                order.by = as.Date(kospi200$Date))
+nikkei225 <- xts(nikkei225[, -1], # data columns (without the first column with date)
+                 order.by = as.Date(nikkei225$Date))
