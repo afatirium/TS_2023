@@ -64,7 +64,7 @@ nikkei225 <- read.csv("^nkx_d.csv",
                       dec = ".",
                       stringsAsFactors = F)
 
-# Print the data frames
+## Print the data frames
 head(wig20)
 head(kospi200)
 head(nikkei225)
@@ -72,9 +72,28 @@ head(SP500)
 head(DAX)
 
 ## change date as row index
-wig20 <- xts(wig20[, -1], # data columns (without the first column with date)
+wig20 <- xts(wig20[, -1], 
                 order.by = as.Date(wig20$Date))
-kospi200 <- xts(kospi200[, -1], # data columns (without the first column with date)
+kospi200 <- xts(kospi200[, -1],
                 order.by = as.Date(kospi200$Date))
-nikkei225 <- xts(nikkei225[, -1], # data columns (without the first column with date)
+nikkei225 <- xts(nikkei225[, -1], 
                  order.by = as.Date(nikkei225$Date))
+
+str(wig20)
+str(SP500)
+str(DAX)
+
+# I will include only the close price 
+
+
+SP500 <- SP500[, 4]
+names(SP500) <- "SP500"
+
+# Also, we will add log-returns to the data
+
+SP500$r <- diff.xts(log(SP500$SP500))
+
+# Finally, we limit our data to days since the beginning of 2008:
+
+SP500 <- SP500["2008/",] 
+
