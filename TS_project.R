@@ -96,11 +96,11 @@ names(SP500) <- "SP500"
 
 # add log-returns to the data
 
-SP500$SP500_r <- diff.xts(log(SP500$SP500))
+#SP500$SP500_r <- diff.xts(log(SP500$SP500))
 
 # Finally, limit the data to days since the beginning of 2008:
 
-SP500 <- SP500["2008/",] 
+#SP500 <- SP500["2008/",] 
 
 # Now, let's plot the close price 
 
@@ -191,7 +191,7 @@ tail(portfolio)
 
 ##All Missing values are cleaned. Let's continue ^.^
 
-#Adding log return of index seperately and applying weight
+#Adding log return of index seperatedly and applying weight
 
 portfolio$SP500_r <- 0.2 * diff.xts(log(portfolio$SP500))
 
@@ -204,6 +204,10 @@ portfolio$NKK225_r <- 0.2 * diff.xts(log(portfolio$NKK225))
 portfolio$WIG20_r <- 0.2 * diff.xts(log(portfolio$WIG20))
 
 head(portfolio)
+
+#Creating of all indexes log returns
+portfolio$PORTFOLIO_r <- rowSums(portfolio[ , c("SP500_r", "DAX_r", "KOSPI_r", "WIG20_r", "NKK225_r")])
+
 
 
 
