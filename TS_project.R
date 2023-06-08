@@ -154,7 +154,7 @@ names(DAX) <- c("DAX")
 ##Create portfolio 
 portfolio <- SP500
 portfolio$DAX <-DAX$DAX
-portfolio$wig20 <-wig20$WIG20
+portfolio$WIG20 <-wig20$WIG20
 portfolio$KOSPI200 <- kospi200$KOSPI200
 portfolio$NKK225<- nikkei225$NKK225
 
@@ -168,20 +168,42 @@ any(is.na(portfolio))
 
 portfolio <- portfolio["2018", ]
 
+
 ## all index start from 2018 and I have missing values still...
-## I assume that these missing values exist because of non-work days, that's why fill values wth previous ones.
+## I assume that these missing values exist because of non-work days, that's why fill missing values with the previous available value.
 
 portfolio <- na.locf(portfolio)
 ##Check
 any(is.na(portfolio))
+
+dweek_ <- wday(portfolio)
+table(dweek_)
+
+#According to the result of wday function, there isn't weekend in dataset
 
 ##Still, I have NA values at the begining of the dataset, so I decided to omit these two days
 portfolio <- na.omit(portfolio)
 ##Check
 any(is.na(portfolio))
 
-#All Missing values are cleaned.
+head(portfolio)
+tail(portfolio)
 
+##All Missing values are cleaned. Let's continue ^.^
+
+#Adding log return of index seperately and applying weight
+
+portfolio$SP500_r <- 0.2 * diff.xts(log(portfolio$SP500))
+
+portfolio$DAX_r <- 0.2 * diff.xts(log(portfolio$DAX))
+
+portfolio$KOSPI_r <- 0.2 * diff.xts(log(portfolio$KOSPI200))
+
+portfolio$NKK225_r <- 0.2 * diff.xts(log(portfolio$NKK225))
+
+portfolio$WIG20_r <- 0.2 * diff.xts(log(portfolio$WIG20))
+
+head(portfolio)
 
 
 
