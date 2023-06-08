@@ -25,7 +25,7 @@ library(BatchGetSymbols)
 setwd("C:\\Users\\Afat\\Documents\\GitHub\\TS_2023")
 getwd()
 
-# Set Alpha Vantage API key)
+# Set Alpha Vantage API key
 api_key <- "1HPP3767XJS4QL7L"
 
 # Prepraing the data
@@ -86,6 +86,8 @@ str(wig20)
 str(SP500)
 str(DAX)
 
+
+# It is pratice part with SP500
 # I will include only the close price 
 
 
@@ -94,9 +96,9 @@ names(SP500) <- "SP500"
 
 # add log-returns to the data
 
-SP500$r <- diff.xts(log(SP500$SP500))
+SP500$SP500_r <- diff.xts(log(SP500$SP500))
 
-# Finally, limit our data to days since the beginning of 2008:
+# Finally, limit the data to days since the beginning of 2008:
 
 SP500 <- SP500["2008/",] 
 
@@ -109,7 +111,7 @@ plot(SP500$SP500,
      grid.ticks.lty = 3,
      main = "Daily close price of SP500")
 
-# ... and it's log-returns:
+# and it's log-returns
 
 plot(SP500$r, 
      col = "red",
@@ -117,7 +119,7 @@ plot(SP500$r,
      grid.ticks.on = "years",
      main = "Log-returns of SP500")
 
-# Let's also plot the ACF function of log-returns:
+#Plot the ACF function of log-returns:
 
 acf(SP500$r, 
     lag.max = 36, 
@@ -126,3 +128,60 @@ acf(SP500$r,
     col = "darkblue", 
     lwd = 7, 
     main = "ACF of log-returns of SP500")
+
+# Data Preparation
+## change date as row index
+wig20 <- xts(wig20[, -1], 
+             order.by = as.Date(wig20$Date))
+kospi200 <- xts(kospi200[, -1],
+                order.by = as.Date(kospi200$Date))
+nikkei225 <- xts(nikkei225[, -1], 
+                 order.by = as.Date(nikkei225$Date))
+
+## select only close values for all indexes
+wig20 <- wig20[, 4]
+names(wig20) <- c("WIG20")
+
+kospi200 <- kospi200[, 4]
+names(kospi200) <- c("KOSPI200")
+
+nikkei225 <- nikkei225[, 4]
+names(nikkei225) <- c("NKK225")
+
+DAX <- DAX[, 4]
+names(DAX) <- c("DAX")
+
+##Create portfolio 
+portfolio <- SP500
+portfolio$DAX <-DAX$DAX
+portfolio$wig20 <-wig20$WIG20
+portfolio$KOSPI200 <- kospi200$KOSPI200
+portfolio$NKK225<- nikkei225$NKK225
+
+head(portfolio)
+
+##Handling missing values
+any(is.na(portfolio))
+
+## 1) I have missing values, because my data start from different date for different variables
+## that's why limit start time from 2018
+
+portfolio <- portfolio["2018", ]
+
+## all index start from 2018 and I have missing values still...
+## I assume that these missing values exist because of non-work days, that's why fill values wth previous ones.
+
+portfolio <- na.locf(portfolio)
+##Check
+any(is.na(portfolio))
+
+##Still, I have NA values at the begining of the dataset, so I decided to omit these two days
+portfolio <- na.omit(portfolio)
+##Check
+any(is.na(portfolio))
+
+#All Missing values are cleaned.
+
+
+
+
