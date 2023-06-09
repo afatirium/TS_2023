@@ -16,8 +16,6 @@ library(FinTS)    # ArchTest()
 library(car)      # durbinWatsonTest()
 library(rmgarch)
 library(fGarch) # e.g. garchFit()
-library(ccgarch)
-library(ccgarch2) # not available for R 4.2.0!
 library(quantmod)
 library(rvest)
 library(lubridate)
@@ -80,50 +78,6 @@ head(DAX)
 str(wig20)
 str(SP500)
 str(DAX)
-
-
-# It is pratice part with SP500
-
-## I will include only the close price 
-
-
-SP500 <- SP500[, 4]
-names(SP500) <- "SP500"
-
-# add log-returns to the data
-
-#SP500$SP500_r <- diff.xts(log(SP500$SP500))
-
-# Finally, limit the data to days since the beginning of 2008:
-
-#SP500 <- SP500["2008/",] 
-
-# Now, let's plot the close price 
-
-plot(SP500$SP500,
-     col = "blue",
-     major.ticks = "years", 
-     grid.ticks.on = "years",
-     grid.ticks.lty = 3,
-     main = "Daily close price of SP500")
-
-# and it's log-returns
-
-plot(SP500$r, 
-     col = "red",
-     major.ticks = "years", 
-     grid.ticks.on = "years",
-     main = "Log-returns of SP500")
-
-#Plot the ACF function of log-returns:
-
-acf(SP500$r, 
-    lag.max = 36, 
-    na.action = na.pass,
-    ylim = c(-0.1,0.1), # we rescale the vertical axis
-    col = "darkblue", 
-    lwd = 7, 
-    main = "ACF of log-returns of SP500")
 
 # Data Preparation
 
@@ -659,5 +613,4 @@ compare_ICs_ugarchfit(c("k.ar1egarch11",
 # According to the comparison, last model, AR(1)-EGARCH-m-st(1,1) is the best model
 # Let's turn page to the new chapter ^.^ 
 
-# VaR (Value at Risk)
-
+# VaR (Value at risk)

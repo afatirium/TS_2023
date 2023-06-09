@@ -1,0 +1,63 @@
+---
+title: "TSA Final project"
+subtitle: "Estimating Value-at-Risk of a Portfolio with GARCH-Fmaliy models"
+author: "Afet Ibadova"
+date: "10/06/2023"
+output: 
+  html_document:
+    theme: spacelab
+    highlight: tango
+    toc: true
+    toc_float:
+      collapsed: false
+      smooth_scroll: true
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo    = TRUE, 
+                      cache   = TRUE,
+                      message = FALSE, 
+                      warning = FALSE)
+options(scipen = 10)
+```
+
+# Introduction
+
+
+
+# Packages and data
+
+Lets load all needed packages
+
+```{r cache = F}
+library(dplyr)
+library(tidyverse)
+library(xts)
+library(zoo)
+library(fBasics)  # basicStats()
+library(tseries)  # jarque.bera.test()
+library(FinTS)    # ArchTest()
+library(car)      # durbinWatsonTest()
+library(rmgarch)
+library(fGarch) # e.g. garchFit()
+library(quantmod)
+library(rvest)
+library(lubridate)
+library(BatchGetSymbols)
+library(graphics)
+library(tictoc)
+
+source("functions/compare_ICs_GARCH.R")
+source("functions/compare_ICs_ugarchfit.R")
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
