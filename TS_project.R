@@ -289,6 +289,9 @@ ArchTest(portfolio$PORTFOLIO_r,  # here we use a vector of returns as input
 durbinWatsonTest(lm(portfolio$PORTFOLIO_r^2 ~ 1),
                  max.lag = 5)
 
+#The null hypothesis for durbinWatsonTest about no autocorrelation in squared log returns is rejected.
+
+
 # Modelling
 
 # Now, we will find the most attractive GARCH(q, p) model. 
@@ -297,7 +300,22 @@ durbinWatsonTest(lm(portfolio$PORTFOLIO_r^2 ~ 1),
 
 ### ARCH(1)
 
+k.arch1 <- garchFit(formula = ~ garch(1, 0), # GARCH(q, p)
+                    # formula describing the mean and variance equation 
+                    # of the ARMA-GARCH - we assume that returns
+                    # follow an ARCH(1) process
+                    data = portfolio$PORTFOLIO_r,
+                    # conditional distribution of errors
+                    cond.dist = "norm", 
+                    # if we don't want to see the history of iterations
+                    trace = FALSE) 
 
+# Summary of results and some diagnostic tests:
+
+summary(k.arch1)
+plot(k.arch1, which = 10)
+plot(k.arch1, which = 11)
+plot(k.arch1, which = 2)
 
 
 
