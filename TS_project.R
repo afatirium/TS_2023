@@ -464,21 +464,6 @@ plot(k.ar1arch10, which = 11)
 
 ### Result: ARCH vs GARCH
 
-# Comparison function from lab:
-compare_ICs_GARCH <- function(models_list) { 
-  n <- length(models_list)
-  for(i in 1:n) {
-    ICs_ <- data.frame(t(get(models_list[i])@fit$ics))
-    ICs_$model <- models_list[i]
-    if (i == 1) ICs <- ICs_ else ICs <- rbind(ICs, ICs_)
-  }
-  
-  mins <- sapply(ICs[, 1:(ncol(ICs) - 1)],
-                 function(x) which(x == min(x)))
-  
-  return(list(ICs = ICs, which.min = mins))
-}
-
 # Let's compare the models using above mentioned fucntion:
 
 compare_ICs_GARCH(c("k.arch1", 
@@ -635,6 +620,7 @@ plot(k.ar1garchm11a, which = 12)
 
 ## The EGARCH in mean-t model
 
+### AR(1)-EGARCH-m-st(1,1)
 # Let's first define the model specification:
 
 spec <- ugarchspec(# variance equation
@@ -661,27 +647,7 @@ plot(k.ar1egarchmt11, which = 11)
 plot(k.ar1egarchmt11, which = 12)
 
 
-
-
-
-
-# Comparison function
-
-compare_ICs_ugarchfit <- function(models_list) { 
-  n <- length(models_list)
-  
-  for(i in 1:n) {
-    ICs_ <- data.frame(t(infocriteria(get(models_list[i]))))
-    ICs_$model <- models_list[i]
-    if(i == 1) ICs <- ICs_ else ICs <- rbind(ICs, ICs_)
-  }
-  
-  mins <- sapply(ICs[, 1:(ncol(ICs) - 1)], function(x) which(x == min(x)))
-  
-  return(list(ICs = ICs, which.min = mins))	
-}
-
-## comparison
+# Comparison
 
 compare_ICs_ugarchfit(c("k.ar1egarch11",
                         "k.ar1egarch11a",
@@ -689,3 +655,9 @@ compare_ICs_ugarchfit(c("k.ar1egarch11",
                         "k.ar1garchm11", 
                         "k.ar1garchm11a",
                         "k.ar1egarchmt11"))
+
+# According to the comparison, last model, AR(1)-EGARCH-m-st(1,1) is the best model
+# Let's turn page to the new chapter ^.^ 
+
+# VaR (Value at Risk)
+
