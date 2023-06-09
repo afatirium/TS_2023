@@ -21,6 +21,7 @@ library(quantmod)
 library(rvest)
 library(lubridate)
 library(BatchGetSymbols)
+library(graphics)
 
 setwd("C:\\Users\\Afat\\Documents\\GitHub\\TS_2023")
 getwd()
@@ -139,6 +140,9 @@ nikkei225 <- xts(nikkei225[, -1],
                  order.by = as.Date(nikkei225$Date))
 
 ## select only close values for all indexes
+SP500 <- SP500[, 4]
+names(SP500) <- "SP500"
+
 wig20 <- wig20[, 4]
 names(wig20) <- c("WIG20")
 
@@ -166,8 +170,8 @@ any(is.na(portfolio))
 ## 1) I have missing values, because my data start from different date for different variables
 ## that's why limit start time from 2018
 
-portfolio <- portfolio["2018", ]
-
+portfolio <- portfolio["2018/", ]
+tail (portfolio)
 
 ## all index start from 2018 and I have missing values still...
 ## I assume that these missing values exist because of non-work days, that's why fill missing values with the previous available value.
@@ -205,9 +209,38 @@ portfolio$WIG20_r <- 0.2 * diff.xts(log(portfolio$WIG20))
 
 head(portfolio)
 
-#Creating of all indexes log returns
+#Creating of all indexes log returns all together
 portfolio$PORTFOLIO_r <- rowSums(portfolio[ , c("SP500_r", "DAX_r", "KOSPI_r", "WIG20_r", "NKK225_r")])
 
+head(portfolio)
 
+#Volatility Modelling
 
+## Plot of portfolio returns
+plot(portfolio$PORTFOLIO_r,
+     col = "blue",
+     main = "Portfolio returns")
 
+# Checking skewness and kurtosis
+basic_stats <- basicStats(portfolio$PORTFOLIO_r)
+print(
+  paste("Skewness",basic_stats[rownames(basic_stat) == "Skewness",], 
+        "::", 
+        "Kurtosis",basic_stats[rownames(basic_stat) == "Kurtosis",]
+  ))
+
+# Plotting Histogram of Log-returns
+tibble(r = as.numeric(portfolio$PORTFOLIO_r)) %>%
+  ggplot(aes(r)) +
+  geom_histogram(aes(y =..density..),
+                 colour = "black", 
+                 fill = "blue") +
+  stat_function(fun = dnorm,colour="red",
+                args = list(mean = mean(portfolio$PORTFOLIO_r), 
+                            sd = sd(portfolio$PORTFOLIO_r))) +
+  theme_dark() + 
+  labs(
+    title = paste("Density of the Portfolio log-returns"), 
+    y = "", x = "",
+    caption = "source: own calculations"
+  )
