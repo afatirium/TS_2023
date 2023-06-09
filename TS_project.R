@@ -421,3 +421,18 @@ plot(k.ar5garch11, which = 11)
 # - Except AR2,AR3,AR4,AR5, other parameters are significant.
 # - The Ljung-box test for R^2 shows there is no more autocorrelation between the current and past standardized squared residuals. Similarly, there is no autocorrelation among returns after adding AR part now.
 # - Both ACF figures show no significant lags.
+
+### AR(1)-GARCH(1,1)
+k.ar1garch11 <- garchFit(~arma(1, 0) + garch(1, 1),
+                         data = portfolio$PORTFOLIO_r,
+                         include.mean = TRUE,
+                         cond.dist = "norm",
+                         trace = FALSE)
+summary(k.ar1garch11)
+plot(k.ar1garch11, which = 10)
+plot(k.ar1garch11, which = 11)
+
+# - All parameters are significant.
+# - The Ljung-box test for R^2 shows there is no more autocorrelation between the current and past standardized squared residuals. Similarly, there is no autocorrelation among returns after adding AR part now.
+# - Both ACF figures show no significant lags.
+
