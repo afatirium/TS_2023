@@ -443,7 +443,7 @@ plot(k.ar1garch11, which = 11)
 ### AR(1)-ARCH(10)
 tic()
 k.ar1arch10 <- garchFit(~arma(1, 0) + garch(10, 0),
-                        data = SP500$r,
+                        data = portfolio$PORTFOLIO_r,
                         include.mean = TRUE,
                         cond.dist = "norm",
                         trace = FALSE)
@@ -485,7 +485,7 @@ compare_ICs_GARCH(c("k.arch1",
                     "k.ar1garch11", 
                     "k.ar1arch10"))
 
-# The comparison shows that 8th - AR(1)-GARCH(1,1) is the best model among others. 
+# The comparison shows that 8th - **AR(1)-GARCH(1,1)** is the best model among others. 
 # I will use this model for other GARCH extensions. 
 # Let's turn the page for new chapter! ^.^
 
@@ -493,6 +493,40 @@ compare_ICs_GARCH(c("k.arch1",
 # GARCH extensions
 
 ## EGARCH model
+# Let's define a model specification:
 
+### AR(1)-EGARCH(1,1)
 
+spec <- ugarchspec(# variance equation
+    variance.model = list(model = "eGARCH", 
+                          garchOrder = c(1, 1)),
+    mean.model = list(armaOrder = c(1, 0), 
+                      include.mean = TRUE), 
+    # assumed distribution of errors
+    distribution.model = "norm")
 
+# and estimate the model:
+
+k.ar1egarch11 <- ugarchfit(spec = spec, 
+                           data = portfolio$PORTFOLIO_r)
+
+#Check the results:
+
+k.ar1egarch11
+
+### AR(1)-EGARCH(1,1) without mu
+speca <- ugarchspec(# variance equation
+  variance.model = list(model = "eGARCH", 
+                        garchOrder = c(1, 1)),
+  mean.model = list(armaOrder = c(1, 0), 
+                    include.mean = FALSE), 
+  # assumed distribution of errors
+  distribution.model = "norm")
+
+# and estimate the model:
+
+k.ar1egarch11a <- ugarchfit(spec = spec, 
+                           data = portfolio$PORTFOLIO_r)
+
+#Result:
+k.ar1egarch11a
