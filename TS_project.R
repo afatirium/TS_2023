@@ -31,7 +31,7 @@ api_key <- "1HPP3767XJS4QL7L"
 
 # Prepraing the data
 start.date <- "2000-01-01"
-stop.date  <- "2023-01-01"
+stop.date  <- "2023-06-07"
 
 
 # Fetch data for the S&P 500
@@ -44,18 +44,12 @@ DAX <- getSymbols("^GDAXI",
                   from = start.date, to = stop.date, 
                   auto.assign = FALSE)
 
-# Fill missing values in DAX with the previous available value
-DAX <- na.locf(DAX)
-
-
 # Read the CSV files for Wig20, kospi200, nikkei225
 wig20 <- read.csv("wig20_d.csv",
                      header = TRUE,
                      sep = ",",
                      dec = ".",
                      stringsAsFactors = F)
-wig20 <- na.locf(wig20)
-
 
 kospi200 <- read.csv("^kospi_d.csv",
                      header = TRUE,
@@ -68,20 +62,12 @@ nikkei225 <- read.csv("^nkx_d.csv",
                       dec = ".",
                       stringsAsFactors = F)
 
-## Print the data frames
+## Print the data frames for checking
 head(wig20)
 head(kospi200)
 head(nikkei225)
 head(SP500)
 head(DAX)
-
-## change date as row index
-wig20 <- xts(wig20[, -1], 
-                order.by = as.Date(wig20$Date))
-kospi200 <- xts(kospi200[, -1],
-                order.by = as.Date(kospi200$Date))
-nikkei225 <- xts(nikkei225[, -1], 
-                 order.by = as.Date(nikkei225$Date))
 
 str(wig20)
 str(SP500)
@@ -89,7 +75,8 @@ str(DAX)
 
 
 # It is pratice part with SP500
-# I will include only the close price 
+
+## I will include only the close price 
 
 
 SP500 <- SP500[, 4]
@@ -131,6 +118,7 @@ acf(SP500$r,
     main = "ACF of log-returns of SP500")
 
 # Data Preparation
+
 ## change date as row index
 wig20 <- xts(wig20[, -1], 
              order.by = as.Date(wig20$Date))
@@ -138,6 +126,8 @@ kospi200 <- xts(kospi200[, -1],
                 order.by = as.Date(kospi200$Date))
 nikkei225 <- xts(nikkei225[, -1], 
                  order.by = as.Date(nikkei225$Date))
+
+head(wig20)
 
 ## select only close values for all indexes
 SP500 <- SP500[, 4]
@@ -156,6 +146,7 @@ DAX <- DAX[, 4]
 names(DAX) <- c("DAX")
 
 ##Create portfolio 
+
 portfolio <- SP500
 portfolio$DAX <-DAX$DAX
 portfolio$WIG20 <-wig20$WIG20
@@ -167,11 +158,12 @@ head(portfolio)
 ##Handling missing values
 any(is.na(portfolio))
 
-## 1) I have missing values, because my data start from different date for different variables
+## I have missing values, because my data start is different for different variables
 ## that's why limit start time from 2018
 
 portfolio <- portfolio["2018/", ]
 tail (portfolio)
+head(portfolio)
 
 ## all index start from 2018 and I have missing values still...
 ## I assume that these missing values exist because of non-work days, that's why fill missing values with the previous available value.
@@ -180,12 +172,14 @@ portfolio <- na.locf(portfolio)
 ##Check
 any(is.na(portfolio))
 
+#I have missing values, Again..
+
 dweek_ <- wday(portfolio)
 table(dweek_)
 
 #According to the result of wday function, there isn't weekend in dataset
 
-##Still, I have NA values at the begining of the dataset, so I decided to omit these two days
+##Still, I have NA values at the begining of the dataset, so I decided to omit these
 portfolio <- na.omit(portfolio)
 ##Check
 any(is.na(portfolio))
@@ -193,6 +187,7 @@ any(is.na(portfolio))
 head(portfolio)
 tail(portfolio)
 
+#
 ##All Missing values are cleaned. Let's continue ^.^
 
 #Adding log return of index seperatedly and applying weight
@@ -201,11 +196,12 @@ portfolio$SP500_r <- 0.2 * diff.xts(log(portfolio$SP500))
 
 portfolio$DAX_r <- 0.2 * diff.xts(log(portfolio$DAX))
 
+portfolio$WIG20_r <- 0.2 * diff.xts(log(portfolio$WIG20))
+
 portfolio$KOSPI_r <- 0.2 * diff.xts(log(portfolio$KOSPI200))
 
 portfolio$NKK225_r <- 0.2 * diff.xts(log(portfolio$NKK225))
 
-portfolio$WIG20_r <- 0.2 * diff.xts(log(portfolio$WIG20))
 
 head(portfolio)
 
@@ -213,10 +209,15 @@ head(portfolio)
 portfolio$PORTFOLIO_r <- rowSums(portfolio[ , c("SP500_r", "DAX_r", "KOSPI_r", "WIG20_r", "NKK225_r")])
 
 head(portfolio)
+## I have missing values in the first row because of the diff function, let's omit the first row
+portfolio <- na.omit(portfolio)
+head(portfolio)
+any(is.na(portfolio))
 
 #Volatility Modelling
 
 ## Plot of portfolio returns
+options(scipen = 10)
 plot(portfolio$PORTFOLIO_r,
      col = "blue",
      main = "Portfolio returns")
@@ -224,9 +225,9 @@ plot(portfolio$PORTFOLIO_r,
 # Checking skewness and kurtosis
 basic_stats <- basicStats(portfolio$PORTFOLIO_r)
 print(
-  paste("Skewness",basic_stats[rownames(basic_stat) == "Skewness",], 
+  paste("Skewness",basic_stats[rownames(basic_stats) == "Skewness",], 
         "::", 
-        "Kurtosis",basic_stats[rownames(basic_stat) == "Kurtosis",]
+        "Kurtosis",basic_stats[rownames(basic_stats) == "Kurtosis",]
   ))
 
 # Plotting Histogram of Log-returns
@@ -244,3 +245,15 @@ tibble(r = as.numeric(portfolio$PORTFOLIO_r)) %>%
     y = "", x = "",
     caption = "source: own calculations"
   )
+
+# Jarque-Bera statistic:
+jarque.bera.test(portfolio$PORTFOLIO_r)
+
+##Conclusion for this part:
+##1. Skewness is negative: -0.825809
+##2. Kurtosis is 13.232398, it means strong excess kurtosis
+##3. The plot is leptokurtosis,  "heavy tails" and higher peak in mean
+##4. According to the JB test, we reject the null hypothesis. The null hypothesis is a joint hypothesis of the skewness being zero and the excess kurtosis being zero.
+
+
+
