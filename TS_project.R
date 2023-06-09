@@ -374,3 +374,19 @@ plot(k.arch10, which = 11)
 # - The Ljung-box test for R^2 shows there is no more autocorrelation between the current and past standardized squared residuals.
 # - It looks like no further extension of the **conditional variance** equation is needed.
 
+### GARCH (1,1)
+
+k.garch11 <- garchFit(~garch(1, 1),
+                      data = portfolio$PORTFOLIO_r,
+                      include.mean = TRUE,
+                      cond.dist = "norm", 
+                      trace = FALSE) 
+summary(k.garch11)
+
+plot(k.garch11, which = 10)
+plot(k.garch11, which = 11)
+
+# - All parameters are significant. 
+# - The Ljung-Box test for R^2 does not show autocorrelation at 5% level between the current and past standardized squared residuals (variance).
+# - The **conditional variance** equation seems to be complete, however the ACF plot of residuals indicates that we may still improve the model by adding AR components in the **mean** equation.
+
