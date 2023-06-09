@@ -214,21 +214,40 @@ portfolio <- na.omit(portfolio)
 head(portfolio)
 any(is.na(portfolio))
 
-#Volatility Modelling
+#Volatility Modelling - - stylized facts
 
 ## Plot of portfolio returns
-options(scipen = 10)
+
 plot(portfolio$PORTFOLIO_r,
      col = "blue",
      main = "Portfolio returns")
 
+## Let's also plot the ACF function of log-returns:
+
+acf(portfolio$PORTFOLIO_r, 
+    lag.max = 36, 
+    na.action = na.pass,
+    ylim = c(-0.1,0.1), # we rescale the vertical axis
+    col = "darkblue", 
+    lwd = 7, 
+    main = "ACF of log-returns of Portfolio")
+
+# As seen, values of the ACF function indicate some autoregressive/MA relations among returns which can be  used to build an ARIMA model.
+
+# Now, let's also see the ACF values for for the **squared** log-returns:
+
+acf(portfolio$PORTFOLIO_r ^ 2, 
+    lag.max = 36, 
+    na.action = na.pass,
+    ylim = c(0,0.5), # we rescale the vertical axis
+    col = "darkblue", 
+    lwd = 7, 
+    main = "ACF of SQUARED log-returns of Portfolio")
+
+# This in turn indicates some autoregressive relations among **squared** returns which can be used to build a (G)ARCH model.
+
 # Checking skewness and kurtosis
-basic_stats <- basicStats(portfolio$PORTFOLIO_r)
-print(
-  paste("Skewness",basic_stats[rownames(basic_stats) == "Skewness",], 
-        "::", 
-        "Kurtosis",basic_stats[rownames(basic_stats) == "Kurtosis",]
-  ))
+basicStats(portfolio$PORTFOLIO_r)
 
 # Plotting Histogram of Log-returns
 tibble(r = as.numeric(portfolio$PORTFOLIO_r)) %>%
@@ -254,6 +273,15 @@ jarque.bera.test(portfolio$PORTFOLIO_r)
 ##2. Kurtosis is 13.232398, it means strong excess kurtosis
 ##3. The plot is leptokurtosis,  "heavy tails" and higher peak in mean
 ##4. According to the JB test, we reject the null hypothesis. The null hypothesis is a joint hypothesis of the skewness being zero and the excess kurtosis being zero.
+
+#ARCH Test
+
+# Let's verify existence of ARCH effects among log-returns. 
+# The ARCH test is based on the autocorrelation of **squared** returns.
+
+ArchTest(portfolio$PORTFOLIO_r,  # here we use a vector of returns as input
+         lags = 5) # and maximum order of ARCH effect
+
 
 
 
