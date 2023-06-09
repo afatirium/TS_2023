@@ -4,6 +4,7 @@
 #install.packages("rvest")
 #install.packages("lubridate")
 #install.packages("BatchGetSymbols")
+#install.packages("tictoc")
 
 library(dplyr)
 library(tidyverse)
@@ -22,6 +23,7 @@ library(rvest)
 library(lubridate)
 library(BatchGetSymbols)
 library(graphics)
+library(tictoc)
 
 setwd("C:\\Users\\Afat\\Documents\\GitHub\\TS_2023")
 getwd()
@@ -422,6 +424,8 @@ plot(k.ar5garch11, which = 11)
 # - The Ljung-box test for R^2 shows there is no more autocorrelation between the current and past standardized squared residuals. Similarly, there is no autocorrelation among returns after adding AR part now.
 # - Both ACF figures show no significant lags.
 
+# Since moast of AR parameters are insignificant, let's try simplier version:
+
 ### AR(1)-GARCH(1,1)
 k.ar1garch11 <- garchFit(~arma(1, 0) + garch(1, 1),
                          data = portfolio$PORTFOLIO_r,
@@ -435,4 +439,20 @@ plot(k.ar1garch11, which = 11)
 # - All parameters are significant.
 # - The Ljung-box test for R^2 shows there is no more autocorrelation between the current and past standardized squared residuals. Similarly, there is no autocorrelation among returns after adding AR part now.
 # - Both ACF figures show no significant lags.
+
+### AR(1)-ARCH(10)
+tic()
+k.ar1arch10 <- garchFit(~arma(1, 0) + garch(10, 0),
+                        data = SP500$r,
+                        include.mean = TRUE,
+                        cond.dist = "norm",
+                        trace = FALSE)
+toc()
+summary(k.ar1arch10)
+plot(k.ar1arch10, which = 10)
+plot(k.ar1arch10, which = 11)
+
+# - All parameters are significant.
+# - The Ljung-box test for R^2 shows there is no more autocorrelation between the current and past standardized squared residuals. Similarly, there is no autocorrelation among returns after adding AR part now.
+# - Both ACF figures show no significant lags
 
