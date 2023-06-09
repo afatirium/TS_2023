@@ -28,6 +28,12 @@ library(tictoc)
 setwd("C:\\Users\\Afat\\Documents\\GitHub\\TS_2023")
 getwd()
 
+# Let's load additional functions which help  easily compare ICs for 
+# GARCH models:
+
+source("functions/compare_ICs_GARCH.R")
+source("functions/compare_ICs_ugarchfit.R")
+
 # Set Alpha Vantage API key
 api_key <- "1HPP3767XJS4QL7L"
 
@@ -519,6 +525,7 @@ plot(k.ar1egarch11, which = 11)
 plot(k.ar1egarch11, which = 12)
 
 ### AR(1)-EGARCH(1,1) without mu
+
 speca <- ugarchspec(# variance equation
   variance.model = list(model = "eGARCH", 
                         garchOrder = c(1, 1)),
@@ -624,3 +631,61 @@ k.ar1garchm11a
 plot(k.ar1garchm11a, which = 3)
 plot(k.ar1garchm11a, which = 11)
 plot(k.ar1garchm11a, which = 12)
+
+
+## The EGARCH in mean-t model
+
+# Let's first define the model specification:
+
+spec <- ugarchspec(# variance equation
+  variance.model = list(model = "eGARCH", 
+                        garchOrder = c(1, 1)),
+  # mean equation
+  mean.model = list(armaOrder = c(1, 0), 
+                    include.mean = TRUE,
+                    archm = TRUE, archpow = 1), 
+  # assumed distribution of errors
+  distribution.model = "std") # std = t-Student
+
+# Now, let's estimate the model:
+
+k.ar1egarchmt11 <- ugarchfit(spec = spec, 
+                             data = portfolio$PORTFOLIO_r)
+
+# The model summary:
+
+k.ar1egarchmt11
+
+plot(k.ar1egarchmt11, which = 3)
+plot(k.ar1egarchmt11, which = 11)
+plot(k.ar1egarchmt11, which = 12)
+
+
+
+
+
+
+# Comparison function
+
+compare_ICs_ugarchfit <- function(models_list) { 
+  n <- length(models_list)
+  
+  for(i in 1:n) {
+    ICs_ <- data.frame(t(infocriteria(get(models_list[i]))))
+    ICs_$model <- models_list[i]
+    if(i == 1) ICs <- ICs_ else ICs <- rbind(ICs, ICs_)
+  }
+  
+  mins <- sapply(ICs[, 1:(ncol(ICs) - 1)], function(x) which(x == min(x)))
+  
+  return(list(ICs = ICs, which.min = mins))	
+}
+
+## comparison
+
+compare_ICs_ugarchfit(c("k.ar1egarch11",
+                        "k.ar1egarch11a",
+                        "k.ar1garcht11",
+                        "k.ar1garchm11", 
+                        "k.ar1garchm11a",
+                        "k.ar1egarchmt11"))
