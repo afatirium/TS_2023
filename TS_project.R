@@ -294,7 +294,7 @@ durbinWatsonTest(lm(portfolio$PORTFOLIO_r^2 ~ 1),
 
 # Modelling
 
-# Now, we will find the most attractive GARCH(q, p) model. 
+# Now, let's try to find the most attractive GARCH(q, p) model. 
 
 ## ARCH vs. GARCH models
 
@@ -317,5 +317,24 @@ plot(k.arch1, which = 10)
 plot(k.arch1, which = 11)
 plot(k.arch1, which = 2)
 
+# The parameters are denoted by the following symbols:
 
+# * mu - constant term in the mean equation
+# * omega - constant term in the variance equation
+# * alpha1 - arch1 parameter in the variance equation
+
+# If the intercept in the mean equation of the model above is not significant at 5% level, we can drop it.
+
+### ARCH(1) - without mu
+k.arch1a <- garchFit(~garch(1, 0), 
+                     data = portfolio$PORTFOLIO_r,
+                     # remove intercept term in the mean equation
+                     include.mean = FALSE,
+                     # conditional distribution of errors
+                     cond.dist = "norm",
+                     trace = FALSE)
+summary(k.arch1a)
+plot(k.arch1a, which = 10)
+plot(k.arch1a, which = 11)
+plot(k.arch1a, which = 2)
 
