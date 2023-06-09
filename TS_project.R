@@ -514,6 +514,10 @@ k.ar1egarch11 <- ugarchfit(spec = spec,
 
 k.ar1egarch11
 
+plot(k.ar1egarch11, which = 3)
+plot(k.ar1egarch11, which = 11)
+plot(k.ar1egarch11, which = 12)
+
 ### AR(1)-EGARCH(1,1) without mu
 speca <- ugarchspec(# variance equation
   variance.model = list(model = "eGARCH", 
@@ -530,3 +534,35 @@ k.ar1egarch11a <- ugarchfit(spec = spec,
 
 #Result:
 k.ar1egarch11a
+
+plot(k.ar1egarch11a, which = 3)
+plot(k.ar1egarch11a, which = 11)
+plot(k.ar1egarch11a, which = 12)
+
+## The GARCH-st model 
+
+# Let's first define a model specification:
+
+spec <- ugarchspec(# variance equation
+  variance.model = list(model = "sGARCH", 
+                        garchOrder = c(1, 1)),
+  # mean equation
+  mean.model = list(armaOrder = c(1, 0), 
+                    include.mean = TRUE), 
+  # assumed distribution of errors
+  distribution.model = "std") # std = t-Student
+
+# Then, we estimate the model:
+
+k.ar1garcht11 <- ugarchfit(spec = spec, 
+                           data = portfolio$PORTFOLIO_r)
+# Result:
+k.ar1garcht11
+
+plot(k.ar1garcht11, which = 3)
+plot(k.ar1garcht11, which = 11)
+plot(k.ar1garcht11, which = 12)
+
+## The GARCH-in-Mean model
+
+
