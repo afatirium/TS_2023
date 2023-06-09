@@ -222,27 +222,6 @@ plot(portfolio$PORTFOLIO_r,
      col = "blue",
      main = "Portfolio returns")
 
-## Let's also plot the ACF function of log-returns:
-
-acf(portfolio$PORTFOLIO_r, 
-    lag.max = 36, 
-    na.action = na.pass,
-    ylim = c(-0.1,0.1), # we rescale the vertical axis
-    col = "darkblue", 
-    lwd = 7, 
-    main = "ACF of log-returns of Portfolio")
-
-# As seen, values of the ACF function indicate some autoregressive/MA relations among returns which can be  used to build an ARIMA model.
-
-# Now, let's also see the ACF values for for the **squared** log-returns:
-
-acf(portfolio$PORTFOLIO_r ^ 2, 
-    lag.max = 36, 
-    na.action = na.pass,
-    ylim = c(0,0.5), # we rescale the vertical axis
-    col = "darkblue", 
-    lwd = 7, 
-    main = "ACF of SQUARED log-returns of Portfolio")
 
 # This in turn indicates some autoregressive relations among **squared** returns which can be used to build a (G)ARCH model.
 
@@ -254,8 +233,8 @@ tibble(r = as.numeric(portfolio$PORTFOLIO_r)) %>%
   ggplot(aes(r)) +
   geom_histogram(aes(y =..density..),
                  colour = "black", 
-                 fill = "blue") +
-  stat_function(fun = dnorm,colour="red",
+                 fill = "light green") +
+  stat_function(fun = dnorm,colour="blue",
                 args = list(mean = mean(portfolio$PORTFOLIO_r), 
                             sd = sd(portfolio$PORTFOLIO_r))) +
   theme_dark() + 
@@ -276,11 +255,48 @@ jarque.bera.test(portfolio$PORTFOLIO_r)
 
 #ARCH Test
 
+## Let's plot the ACF function of log-returns:
+
+acf(portfolio$PORTFOLIO_r, 
+    lag.max = 36, 
+    na.action = na.pass,
+    ylim = c(-0.1,0.1), # we rescale the vertical axis
+    col = "darkgreen", 
+    lwd = 7, 
+    main = "ACF of log-returns of Portfolio")
+
+# As seen, values of the ACF function indicate some autoregressive/MA relations among returns which can be  used to build an ARIMA model.
+
+# Now, let's also see the ACF values for for the **squared** log-returns:
+
+acf(portfolio$PORTFOLIO_r ^ 2, 
+    lag.max = 36, 
+    na.action = na.pass,
+    ylim = c(0,0.5), # we rescale the vertical axis
+    col = "blue", 
+    lwd = 7, 
+    main = "ACF of SQUARED log-returns of Portfolio")
+
 # Let's verify existence of ARCH effects among log-returns. 
 # The ARCH test is based on the autocorrelation of **squared** returns.
 
 ArchTest(portfolio$PORTFOLIO_r,  # here we use a vector of returns as input
          lags = 5) # and maximum order of ARCH effect
+
+# The null hypothesis about lack of ARCH effects strongly rejected!
+# Note: I check this test for different lags, for example, 5,10,15. All the lags indicate same result.
+
+durbinWatsonTest(lm(portfolio$PORTFOLIO_r^2 ~ 1),
+                 max.lag = 5)
+
+# Modelling
+
+# Now, we will find the most attractive GARCH(q, p) model. 
+
+## ARCH vs. GARCH models
+
+### ARCH(1)
+
 
 
 
