@@ -456,3 +456,43 @@ plot(k.ar1arch10, which = 11)
 # - The Ljung-box test for R^2 shows there is no more autocorrelation between the current and past standardized squared residuals. Similarly, there is no autocorrelation among returns after adding AR part now.
 # - Both ACF figures show no significant lags
 
+### Result: ARCH vs GARCH
+
+# Comparison function from lab:
+compare_ICs_GARCH <- function(models_list) { 
+  n <- length(models_list)
+  for(i in 1:n) {
+    ICs_ <- data.frame(t(get(models_list[i])@fit$ics))
+    ICs_$model <- models_list[i]
+    if (i == 1) ICs <- ICs_ else ICs <- rbind(ICs, ICs_)
+  }
+  
+  mins <- sapply(ICs[, 1:(ncol(ICs) - 1)],
+                 function(x) which(x == min(x)))
+  
+  return(list(ICs = ICs, which.min = mins))
+}
+
+# Let's compare the models using above mentioned fucntion:
+
+compare_ICs_GARCH(c("k.arch1", 
+                    "k.arch1a", 
+                    "k.arch5", 
+                    "k.arch10", 
+                    "k.garch11", 
+                    "k.garch11a",
+                    "k.ar5garch11",
+                    "k.ar1garch11", 
+                    "k.ar1arch10"))
+
+# The comparison shows that 8th - AR(1)-GARCH(1,1) is the best model among others. 
+# I will use this model for other GARCH extensions. 
+# Let's turn the page for new chapter! ^.^
+
+
+# GARCH extensions
+
+## EGARCH model
+
+
+
