@@ -566,6 +566,7 @@ plot(k.ar1garcht11, which = 12)
 
 ## The GARCH-in-Mean model
 
+### AR(1)-GARCH-m(1,1)
 # Let's first define a model specification:
 
 spec <- ugarchspec(# variance equation
@@ -595,4 +596,31 @@ plot(k.ar1garchm11, which = 3)
 plot(k.ar1garchm11, which = 11)
 plot(k.ar1garchm11, which = 12)
 
+### AR(1)-GARCH-m(1,1) without mu
 
+spec <- ugarchspec(# variance equation
+  variance.model = list(model = "sGARCH", 
+                        # sGARCH = standard GARCH
+                        garchOrder = c(1, 1)),
+  # mean equation - lets turn on the intercept term
+  mean.model = list(armaOrder = c(1, 0), 
+                    include.mean = FALSE,
+                    # we add an element to the mean equation,
+                    # which can be either stdev (archpow 1)
+                    # or var (archpow=2)
+                    archm = TRUE, archpow = 1), 
+  # assumed distribution of errors
+  distribution.model = "norm")
+
+# Model estimation:
+
+k.ar1garchm11a <- ugarchfit(spec = spec, 
+                           data = portfolio$PORTFOLIO_r)
+
+# Model summary:
+
+k.ar1garchm11a
+
+plot(k.ar1garchm11a, which = 3)
+plot(k.ar1garchm11a, which = 11)
+plot(k.ar1garchm11a, which = 12)
