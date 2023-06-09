@@ -338,3 +338,39 @@ plot(k.arch1a, which = 10)
 plot(k.arch1a, which = 11)
 plot(k.arch1a, which = 2)
 
+#Significant lags are observed for square residuals for lags 2-12, 14-15. 
+#And the Ljung-Box test for R^2 shows there is autocorrelation at 5% level. 
+#Lets try if ARCH(5).
+
+
+### ARCH(5)
+
+k.arch5 <- garchFit(~garch(5, 0),
+                    data = portfolio$PORTFOLIO_r,
+                    include.mean = TRUE,
+                    cond.dist = "norm", 
+                    trace = FALSE) 
+summary(k.arch5)
+
+plot(k.arch5, which = 10)
+plot(k.arch5, which = 11)
+
+# All parameters are significant. The Ljung-box tests for R and R^2 show there is still autocorrelation.
+# The lags 5,6,9,in ACF for squared residuals seem to be still significant.
+
+### ARCH(10)
+
+k.arch10 <- garchFit(~garch(10, 0),
+                    data = portfolio$PORTFOLIO_r,
+                    include.mean = TRUE,
+                    cond.dist = "norm", 
+                    trace = FALSE) 
+summary(k.arch10)
+
+plot(k.arch10, which = 10)
+plot(k.arch10, which = 11)
+
+# - Again most of parameters are significant at 5% level - excluding 4,5,7,10. 
+# - The Ljung-box test for R^2 shows there is no more autocorrelation between the current and past standardized squared residuals.
+# - It looks like no further extension of the **conditional variance** equation is needed.
+
