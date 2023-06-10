@@ -354,6 +354,7 @@ The parameters are denoted by the following symbols:
 If the intercept in the mean equation of the model above is not significant at 5% level, we can drop it.
 
 ### ARCH(1) - without mu
+
 ```{r}
 k.arch1a <- garchFit(~garch(1, 0), 
                      data = portfolio$PORTFOLIO_r,
@@ -367,12 +368,14 @@ plot(k.arch1a, which = 10)
 plot(k.arch1a, which = 11)
 plot(k.arch1a, which = 2)
 ```
-* Significant lags are observed for square residuals for lags 2-12, 14-15. 
-* And the Ljung-Box test for R^2 shows there is autocorrelation at 5% level. 
+
+-   Significant lags are observed for square residuals for lags 2-12, 14-15.
+-   And the Ljung-Box test for R\^2 shows there is autocorrelation at 5% level.
 
 Let's try ARCH(5).
 
 ### ARCH(5)
+
 ```{r}
 k.arch5 <- garchFit(~garch(5, 0),
                     data = portfolio$PORTFOLIO_r,
@@ -384,11 +387,13 @@ summary(k.arch5)
 plot(k.arch5, which = 10)
 plot(k.arch5, which = 11)
 ```
-* All parameters are significant. 
-* The Ljung-box tests for R and R^2 show there is still autocorrelation.
-* The lags 5,6,9,in ACF for squared residuals seem to be still significant.
+
+-   All parameters are significant.
+-   The Ljung-box tests for R and R\^2 show there is still autocorrelation.
+-   The lags 5,6,9,in ACF for squared residuals seem to be still significant.
 
 ### ARCH(10)
+
 ```{r}
 k.arch10 <- garchFit(~garch(10, 0),
                     data = portfolio$PORTFOLIO_r,
@@ -400,11 +405,13 @@ summary(k.arch10)
 plot(k.arch10, which = 10)
 plot(k.arch10, which = 11)
 ```
-* Again most of parameters are significant at 5% level - excluding 4,5,7,10. 
-* The Ljung-box test for R^2 shows there is no more autocorrelation between the current and past standardized squared residuals.
-* It looks like no further extension of the **conditional variance** equation is needed.
+
+-   Again most of parameters are significant at 5% level - excluding 4,5,7,10.
+-   The Ljung-box test for R\^2 shows there is no more autocorrelation between the current and past standardized squared residuals.
+-   It looks like no further extension of the **conditional variance** equation is needed.
 
 ### GARCH (1,1)
+
 ```{r}
 k.garch11 <- garchFit(~garch(1, 1),
                       data = portfolio$PORTFOLIO_r,
@@ -416,9 +423,10 @@ summary(k.garch11)
 plot(k.garch11, which = 10)
 plot(k.garch11, which = 11)
 ```
-* All parameters are significant. 
-* The Ljung-Box test for R^2 does not show autocorrelation at 5% level between the current and past standardized squared residuals (variance).
-* The **conditional variance** equation seems to be complete, however the ACF plot of residuals indicates that we may still improve the model by adding AR components in the **mean** equation.
+
+-   All parameters are significant.
+-   The Ljung-Box test for R\^2 does not show autocorrelation at 5% level between the current and past standardized squared residuals (variance).
+-   The **conditional variance** equation seems to be complete, however the ACF plot of residuals indicates that we may still improve the model by adding AR components in the **mean** equation.
 
 mu is less significant than other parameters, let's try without mu: *(just for fun)*
 
@@ -436,11 +444,12 @@ plot(k.garch11a, which = 10)
 plot(k.garch11a, which = 11)
 ```
 
-* All parameters are significant.
-* The Ljung-Box test for R^2 does not show autocorrelation at 5% level between the current and past standardized squared residuals (variance).
-* ACF for R^2 looks much better.
+-   All parameters are significant.
+-   The Ljung-Box test for R\^2 does not show autocorrelation at 5% level between the current and past standardized squared residuals (variance).
+-   ACF for R\^2 looks much better.
 
 ### AR(5)-GARCH(1,1)
+
 ```{r}
 k.ar5garch11 <- garchFit(~arma(5, 0) + garch(1, 1),
                          data = portfolio$PORTFOLIO_r,
@@ -451,13 +460,15 @@ summary(k.ar5garch11)
 plot(k.ar5garch11, which = 10)
 plot(k.ar5garch11, which = 11)
 ```
-* Except AR2,AR3,AR4,AR5, other parameters are significant.
-* The Ljung-box test for R^2 shows there is no more autocorrelation between the current and past standardized squared residuals. Similarly, there is no autocorrelation among returns after adding AR part now.
-* Both ACF figures show no significant lags.
+
+-   Except AR2,AR3,AR4,AR5, other parameters are significant.
+-   The Ljung-box test for R\^2 shows there is no more autocorrelation between the current and past standardized squared residuals. Similarly, there is no autocorrelation among returns after adding AR part now.
+-   Both ACF figures show no significant lags.
 
 Since moast of AR parameters are insignificant, let's try simplier version:
 
 ### AR(1)-GARCH(1,1)
+
 ```{r}
 k.ar1garch11 <- garchFit(~arma(1, 0) + garch(1, 1),
                          data = portfolio$PORTFOLIO_r,
@@ -469,11 +480,12 @@ plot(k.ar1garch11, which = 10)
 plot(k.ar1garch11, which = 11)
 ```
 
-* All parameters are significant.
-* The Ljung-box test for R^2 shows there is no more autocorrelation between the current and past standardized squared residuals. Similarly, there is no autocorrelation among returns after adding AR part now.
-* Both ACF figures show no significant lags.
+-   All parameters are significant.
+-   The Ljung-box test for R\^2 shows there is no more autocorrelation between the current and past standardized squared residuals. Similarly, there is no autocorrelation among returns after adding AR part now.
+-   Both ACF figures show no significant lags.
 
 ### AR(1)-ARCH(10)
+
 ```{r}
 tic()
 k.ar1arch10 <- garchFit(~arma(1, 0) + garch(10, 0),
@@ -488,9 +500,9 @@ plot(k.ar1arch10, which = 10)
 plot(k.ar1arch10, which = 11)
 ```
 
-* All parameters are significant.
-* The Ljung-box test for R^2 shows there is no more autocorrelation between the current and past standardized squared residuals. Similarly, there is no autocorrelation among returns after adding AR part now.
-* Both ACF figures show no significant lags.
+-   All parameters are significant.
+-   The Ljung-box test for R\^2 shows there is no more autocorrelation between the current and past standardized squared residuals. Similarly, there is no autocorrelation among returns after adding AR part now.
+-   Both ACF figures show no significant lags.
 
 ### Result: ARCH vs GARCH
 
@@ -508,9 +520,9 @@ compare_ICs_GARCH(c("k.arch1",
                     "k.ar1arch10"))
 ```
 
-The comparison shows that 8th - **AR(1)-GARCH(1,1)** is the best model among others. 
+The comparison shows that 8th - **AR(1)-GARCH(1,1)** is the best model among others.
 
-I will use this model for other GARCH extensions. 
+I will use this model for other GARCH extensions.
 
 Let's turn the page for new chapter! ^.^
 
@@ -521,3 +533,194 @@ Let's turn the page for new chapter! ^.^
 Let's define a model specification:
 
 ### AR(1)-EGARCH(1,1)
+```{r}
+spec <- ugarchspec(# variance equation
+    variance.model = list(model = "eGARCH", 
+                          garchOrder = c(1, 1)),
+    mean.model = list(armaOrder = c(1, 0), 
+                      include.mean = TRUE), 
+    # assumed distribution of errors
+    distribution.model = "norm")
+```
+
+and estimate the model:
+
+```{r}
+k.ar1egarch11 <- ugarchfit(spec = spec, 
+                           data = portfolio$PORTFOLIO_r)
+
+#Check the results:
+
+k.ar1egarch11
+```
+
+```{r}
+
+plot(k.ar1egarch11, which = 3)
+plot(k.ar1egarch11, which = 11)
+plot(k.ar1egarch11, which = 12)
+```
+### AR(1)-EGARCH(1,1) without mu
+
+```{r}
+speca <- ugarchspec(# variance equation
+  variance.model = list(model = "eGARCH", 
+                        garchOrder = c(1, 1)),
+  mean.model = list(armaOrder = c(1, 0), 
+                    include.mean = FALSE), 
+  # assumed distribution of errors
+  distribution.model = "norm")
+
+# and estimate the model:
+
+k.ar1egarch11a <- ugarchfit(spec = spec, 
+                           data = portfolio$PORTFOLIO_r)
+```
+Result:
+```{r}
+k.ar1egarch11a
+```
+
+plot(k.ar1egarch11a, which = 3)
+plot(k.ar1egarch11a, which = 11)
+plot(k.ar1egarch11a, which = 12)
+
+## The GARCH-st model 
+### AR(1) - GARCH-st(1,1)
+
+Let's first define a model specification:
+```{r}
+spec <- ugarchspec(# variance equation
+  variance.model = list(model = "sGARCH", 
+                        garchOrder = c(1, 1)),
+  # mean equation
+  mean.model = list(armaOrder = c(1, 0), 
+                    include.mean = TRUE), 
+  # assumed distribution of errors
+  distribution.model = "std") # std = t-Student
+
+
+# Then, estimate the model:
+
+k.ar1garcht11 <- ugarchfit(spec = spec, 
+                           data = portfolio$PORTFOLIO_r)
+# Result:
+k.ar1garcht11
+
+plot(k.ar1garcht11, which = 3)
+plot(k.ar1garcht11, which = 11)
+plot(k.ar1garcht11, which = 12)
+````
+
+## The GARCH-in-Mean model
+
+### AR(1)-GARCH-m(1,1)
+
+Let's first define a model specification:
+```{r}
+spec <- ugarchspec(# variance equation
+  variance.model = list(model = "sGARCH", 
+                        # sGARCH = standard GARCH
+                        garchOrder = c(1, 1)),
+  # mean equation - lets turn on the intercept term
+  mean.model = list(armaOrder = c(1, 0), 
+                    include.mean = TRUE,
+                    # we add an element to the mean equation,
+                    # which can be either stdev (archpow 1)
+                    # or var (archpow=2)
+                    archm = TRUE, archpow = 1), 
+  # assumed distribution of errors
+  distribution.model = "norm")
+
+# Then, we can estimate the model:
+
+k.ar1garchm11 <- ugarchfit(spec = spec, 
+                           data = portfolio$PORTFOLIO_r)
+
+# Let's examine the results:
+
+k.ar1garchm11
+
+plot(k.ar1garchm11, which = 3)
+plot(k.ar1garchm11, which = 11)
+plot(k.ar1garchm11, which = 12)
+```
+
+### AR(1)-GARCH-m(1,1) without mu
+
+```{r}
+spec <- ugarchspec(# variance equation
+  variance.model = list(model = "sGARCH", 
+                        # sGARCH = standard GARCH
+                        garchOrder = c(1, 1)),
+  # mean equation - lets turn on the intercept term
+  mean.model = list(armaOrder = c(1, 0), 
+                    include.mean = FALSE,
+                    # we add an element to the mean equation,
+                    # which can be either stdev (archpow 1)
+                    # or var (archpow=2)
+                    archm = TRUE, archpow = 1), 
+  # assumed distribution of errors
+  distribution.model = "norm")
+
+# Model estimation:
+
+k.ar1garchm11a <- ugarchfit(spec = spec, 
+                           data = portfolio$PORTFOLIO_r)
+
+# Model summary:
+
+k.ar1garchm11a
+
+plot(k.ar1garchm11a, which = 3)
+plot(k.ar1garchm11a, which = 11)
+plot(k.ar1garchm11a, which = 12)
+```
+
+
+## The EGARCH in mean-t model
+
+### AR(1)-EGARCH-m-st(1,1)
+
+Let's first define the model specification:
+```{r}
+spec <- ugarchspec(# variance equation
+  variance.model = list(model = "eGARCH", 
+                        garchOrder = c(1, 1)),
+  # mean equation
+  mean.model = list(armaOrder = c(1, 0), 
+                    include.mean = TRUE,
+                    archm = TRUE, archpow = 1), 
+  # assumed distribution of errors
+  distribution.model = "std") # std = t-Student
+
+# Now, let's estimate the model:
+
+k.ar1egarchmt11 <- ugarchfit(spec = spec, 
+                             data = portfolio$PORTFOLIO_r)
+
+# The model summary:
+
+k.ar1egarchmt11
+
+plot(k.ar1egarchmt11, which = 3)
+plot(k.ar1egarchmt11, which = 11)
+plot(k.ar1egarchmt11, which = 12)
+```
+
+
+# Comparison
+
+```{r}
+compare_ICs_ugarchfit(c("k.ar1egarch11",
+                        "k.ar1egarch11a",
+                        "k.ar1garcht11",
+                        "k.ar1garchm11", 
+                        "k.ar1garchm11a",
+                        "k.ar1egarchmt11"))
+```
+According to the comparison, last model, AR(1)-EGARCH-m-st(1,1) is the best model.
+
+Let's turn page to the new chapter ^.^ 
+
+# VaR (Value at risk)
