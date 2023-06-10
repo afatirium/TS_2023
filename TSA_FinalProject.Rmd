@@ -11,7 +11,6 @@ output:
     toc_float:
       collapsed: false
       smooth_scroll: true
-
 ---
 
 ```{r setup, include=FALSE}
@@ -24,9 +23,7 @@ options(scipen = 10)
 
 # Introduction
 
-
-
-# Packages and data
+## Packages and data
 
 Lets load all needed packages
 
@@ -52,12 +49,169 @@ source("functions/compare_ICs_GARCH.R")
 source("functions/compare_ICs_ugarchfit.R")
 ```
 
-## Including Plots
+# Prepraing the data
 
-You can also embed plots, for example:
+## Fetching Data
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r}
+start.date <- "2000-01-01"
+stop.date  <- "2023-06-07"
+
+
+# Fetch data for the S&P 500
+SP500 <- getSymbols("^GSPC", src = "yahoo", 
+                    from = start.date, to = stop.date, 
+                    auto.assign = FALSE)
+
+# Fetch data for DAX from Yahoo Finance
+DAX <- getSymbols("^GDAXI", 
+                  from = start.date, to = stop.date, 
+                  auto.assign = FALSE)
+
+# Read the CSV files for Wig20, kospi200, nikkei225
+wig20 <- read.csv("wig20_d.csv",
+                     header = TRUE,
+                     sep = ",",
+                     dec = ".",
+                     stringsAsFactors = F)
+
+kospi200 <- read.csv("^kospi_d.csv",
+                     header = TRUE,
+                     sep = ",",
+                     dec = ".",
+                     stringsAsFactors = F)
+nikkei225 <- read.csv("^nkx_d.csv",
+                      header = TRUE,
+                      sep = ",",
+                      dec = ".",
+                      stringsAsFactors = F)
+## Print the data frames for checking
+head(wig20)
+head(kospi200)
+head(nikkei225)
+head(SP500)
+head(DAX)
+
+str(wig20)
+str(SP500)
+str(DAX)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+## Cleaning data
+
+```{r}
+## change date as row index
+wig20 <- xts(wig20[, -1], 
+             order.by = as.Date(wig20$Date))
+kospi200 <- xts(kospi200[, -1],
+                order.by = as.Date(kospi200$Date))
+nikkei225 <- xts(nikkei225[, -1], 
+                 order.by = as.Date(nikkei225$Date))
+
+head(wig20)
+```
+
+Let's select only close values:
+
+```{r}
+## select only close values for all indexes
+SP500 <- SP500[, 4]
+names(SP500) <- "SP500"
+
+wig20 <- wig20[, 4]
+names(wig20) <- c("WIG20")
+
+kospi200 <- kospi200[, 4]
+names(kospi200) <- c("KOSPI200")
+
+nikkei225 <- nikkei225[, 4]
+names(nikkei225) <- c("NKK225")
+
+DAX <- DAX[, 4]
+names(DAX) <- c("DAX")
+```
+
+Create portfolio with 5 index
+
+```{r}
+portfolio <- SP500
+portfolio$DAX <-DAX$DAX
+portfolio$WIG20 <-wig20$WIG20
+portfolio$KOSPI200 <- kospi200$KOSPI200
+portfolio$NKK225<- nikkei225$NKK225
+
+head(portfolio)
+```
+
+## Missing Values
+
+Check the missing values
+
+```{r}
+any(is.na(portfolio))
+```
+
+I have missing values, because my data start is different for different variables, that's why limit start time from 2018
+
+```{r}
+portfolio <- portfolio["2018/", ]
+tail (portfolio)
+head(portfolio)
+```
+
+After limiting the timeframe, I have missing values, stil... I assume that these missing values exist because of non-work days. Let's fill the null values with the previous values.
+
+```{r}
+portfolio <- na.locf(portfolio)
+##Check
+any(is.na(portfolio))
+```
+
+I have missing values, let's check the head of portfolio
+
+```{r}
+head(portfolio)
+```
+
+There is null values at hte beginign of dataset, that's why na.locf function wasn't fill them. Let's omit these missing values
+
+```{r}
+portfolio <- na.omit(portfolio)
+##Check
+any(is.na(portfolio))
+
+head(portfolio)
+tail(portfolio)
+```
+
+All Missing values are cleaned. Let's continue \^.\^
+
+## Adding log return of index seperatedly and applying weight
+
+```{r}
+portfolio$SP500_r <- 0.2 * diff.xts(log(portfolio$SP500))
+
+portfolio$DAX_r <- 0.2 * diff.xts(log(portfolio$DAX))
+
+portfolio$WIG20_r <- 0.2 * diff.xts(log(portfolio$WIG20))
+
+portfolio$KOSPI_r <- 0.2 * diff.xts(log(portfolio$KOSPI200))
+
+portfolio$NKK225_r <- 0.2 * diff.xts(log(portfolio$NKK225))
+
+
+head(portfolio)
+```
+Creating of all indexes log returns all together
+```{r}
+portfolio$PORTFOLIO_r <- rowSums(portfolio[ , c("SP500_r", "DAX_r", "KOSPI_r", "WIG20_r", "NKK225_r")])
+
+head(portfolio)
+```
+I have missing values in the first row because of the diff function, let's omit the first row
+```{r}
+portfolio <- na.omit(portfolio)
+head(portfolio)
+any(is.na(portfolio))
+```
+
