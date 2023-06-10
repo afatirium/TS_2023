@@ -173,7 +173,7 @@ I have missing values, let's check the head of portfolio
 head(portfolio)
 ```
 
-There is null values at hte beginign of dataset, that's why na.locf function wasn't fill them. Let's omit these missing values
+There is null values at the begining of dataset, that's why na.locf function wasn't fill them. Let's omit these missing values
 
 ```{r}
 portfolio <- na.omit(portfolio)
@@ -219,7 +219,7 @@ head(portfolio)
 any(is.na(portfolio))
 ```
 
-#Volatility Modelling - - stylized facts
+# Volatility Modelling - stylized facts
 
 ```{r}
 ## Plot of portfolio returns
@@ -610,13 +610,14 @@ k.ar1garcht11
 plot(k.ar1garcht11, which = 3)
 plot(k.ar1garcht11, which = 11)
 plot(k.ar1garcht11, which = 12)
-````
+```
 
 ## The GARCH-in-Mean model
 
 ### AR(1)-GARCH-m(1,1)
 
 Let's first define a model specification:
+
 ```{r}
 spec <- ugarchspec(# variance equation
   variance.model = list(model = "sGARCH", 
