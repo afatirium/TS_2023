@@ -185,8 +185,6 @@ plot(portfolio$PORTFOLIO_r,
      main = "Portfolio returns")
 
 
-# This in turn indicates some autoregressive relations among **squared** returns which can be used to build a (G)ARCH model.
-
 # Checking skewness and kurtosis
 basicStats(portfolio$PORTFOLIO_r)
 

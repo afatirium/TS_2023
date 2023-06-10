@@ -202,16 +202,322 @@ portfolio$NKK225_r <- 0.2 * diff.xts(log(portfolio$NKK225))
 
 head(portfolio)
 ```
+
 Creating of all indexes log returns all together
+
 ```{r}
 portfolio$PORTFOLIO_r <- rowSums(portfolio[ , c("SP500_r", "DAX_r", "KOSPI_r", "WIG20_r", "NKK225_r")])
 
 head(portfolio)
 ```
+
 I have missing values in the first row because of the diff function, let's omit the first row
+
 ```{r}
 portfolio <- na.omit(portfolio)
 head(portfolio)
 any(is.na(portfolio))
 ```
 
+#Volatility Modelling - - stylized facts
+
+```{r}
+## Plot of portfolio returns
+
+plot(portfolio$PORTFOLIO_r,
+     col = "blue",
+     main = "Portfolio returns")
+```
+
+Checking skewness and kurtosis
+
+```{r}
+basicStats(portfolio$PORTFOLIO_r)
+```
+
+```{r}
+# Plotting Histogram of Log-returns
+tibble(r = as.numeric(portfolio$PORTFOLIO_r)) %>%
+  ggplot(aes(r)) +
+  geom_histogram(aes(y =..density..),
+                 colour = "black", 
+                 fill = "light green") +
+  stat_function(fun = dnorm,colour="blue",
+                args = list(mean = mean(portfolio$PORTFOLIO_r), 
+                            sd = sd(portfolio$PORTFOLIO_r))) +
+  theme_dark() + 
+  labs(
+    title = paste("Density of the Portfolio log-returns"), 
+    y = "", x = "",
+    caption = "source: own calculations"
+  )
+```
+
+Jarque-Bera statistic:
+
+```{r}
+jarque.bera.test(portfolio$PORTFOLIO_r)
+```
+
+**Conclusion for this part:**
+
+1\. Skewness is negative: -0.825809
+
+2\. Kurtosis is 13.232398, it means strong excess kurtosis
+
+3\. The plot is leptokurtosis, "heavy tails" and higher peak in mean
+
+4\. According to the JB test, we reject the null hypothesis. The null hypothesis is a joint hypothesis of the skewness being zero and the excess kurtosis being zero.
+
+# ARCH Test
+
+Let's plot the ACF function of log-returns:
+
+```{r}
+acf(portfolio$PORTFOLIO_r, 
+    lag.max = 36, 
+    na.action = na.pass,
+    ylim = c(-0.1,0.1), # we rescale the vertical axis
+    col = "darkgreen", 
+    lwd = 7, 
+    main = "ACF of log-returns of Portfolio")
+```
+
+As seen, values of the ACF function indicate some autoregressive/MA relations among returns which can be used to build an ARIMA model.
+
+Now, let's also see the ACF values for for the **squared** log-returns:
+
+```{r}
+acf(portfolio$PORTFOLIO_r ^ 2, 
+    lag.max = 36, 
+    na.action = na.pass,
+    ylim = c(0,0.5), # we rescale the vertical axis
+    col = "blue", 
+    lwd = 7, 
+    main = "ACF of SQUARED log-returns of Portfolio")
+```
+
+Let's verify existence of ARCH effects among log-returns.
+
+The ARCH test is based on the autocorrelation of **squared** returns.
+
+```{r}
+ArchTest(portfolio$PORTFOLIO_r,  # here we use a vector of returns as input
+         lags = 5) # and maximum order of ARCH effect
+```
+
+The null hypothesis about lack of ARCH effects strongly rejected!
+
+*Note:* I check this test for different lags, for example, 5,10,15. All the lags indicate same result.
+
+```{r}
+durbinWatsonTest(lm(portfolio$PORTFOLIO_r^2 ~ 1),
+                 max.lag = 5)
+```
+
+The null hypothesis for durbinWatsonTest about no autocorrelation in squared log returns is rejected.
+
+# Modelling
+
+Now, let's try to find the most attractive GARCH(q, p) model.
+
+## ARCH vs. GARCH models
+
+### ARCH(1)
+
+```{r}
+k.arch1 <- garchFit(formula = ~ garch(1, 0), # GARCH(q, p)
+                    # formula describing the mean and variance equation 
+                    # of the ARMA-GARCH - we assume that returns
+                    # follow an ARCH(1) process
+                    data = portfolio$PORTFOLIO_r,
+                    # conditional distribution of errors
+                    cond.dist = "norm", 
+                    # if we don't want to see the history of iterations
+                    trace = FALSE) 
+
+# Summary of results and some diagnostic tests:
+
+summary(k.arch1)
+plot(k.arch1, which = 10)
+plot(k.arch1, which = 11)
+plot(k.arch1, which = 2)
+
+```
+
+The parameters are denoted by the following symbols:
+
+-   mu - constant term in the mean equation
+-   omega - constant term in the variance equation
+-   alpha1 - arch1 parameter in the variance equation
+
+If the intercept in the mean equation of the model above is not significant at 5% level, we can drop it.
+
+### ARCH(1) - without mu
+```{r}
+k.arch1a <- garchFit(~garch(1, 0), 
+                     data = portfolio$PORTFOLIO_r,
+                     # remove intercept term in the mean equation
+                     include.mean = FALSE,
+                     # conditional distribution of errors
+                     cond.dist = "norm",
+                     trace = FALSE)
+summary(k.arch1a)
+plot(k.arch1a, which = 10)
+plot(k.arch1a, which = 11)
+plot(k.arch1a, which = 2)
+```
+* Significant lags are observed for square residuals for lags 2-12, 14-15. 
+* And the Ljung-Box test for R^2 shows there is autocorrelation at 5% level. 
+
+Let's try ARCH(5).
+
+### ARCH(5)
+```{r}
+k.arch5 <- garchFit(~garch(5, 0),
+                    data = portfolio$PORTFOLIO_r,
+                    include.mean = TRUE,
+                    cond.dist = "norm", 
+                    trace = FALSE) 
+summary(k.arch5)
+
+plot(k.arch5, which = 10)
+plot(k.arch5, which = 11)
+```
+* All parameters are significant. 
+* The Ljung-box tests for R and R^2 show there is still autocorrelation.
+* The lags 5,6,9,in ACF for squared residuals seem to be still significant.
+
+### ARCH(10)
+```{r}
+k.arch10 <- garchFit(~garch(10, 0),
+                    data = portfolio$PORTFOLIO_r,
+                    include.mean = TRUE,
+                    cond.dist = "norm", 
+                    trace = FALSE) 
+summary(k.arch10)
+
+plot(k.arch10, which = 10)
+plot(k.arch10, which = 11)
+```
+* Again most of parameters are significant at 5% level - excluding 4,5,7,10. 
+* The Ljung-box test for R^2 shows there is no more autocorrelation between the current and past standardized squared residuals.
+* It looks like no further extension of the **conditional variance** equation is needed.
+
+### GARCH (1,1)
+```{r}
+k.garch11 <- garchFit(~garch(1, 1),
+                      data = portfolio$PORTFOLIO_r,
+                      include.mean = TRUE,
+                      cond.dist = "norm", 
+                      trace = FALSE) 
+summary(k.garch11)
+
+plot(k.garch11, which = 10)
+plot(k.garch11, which = 11)
+```
+* All parameters are significant. 
+* The Ljung-Box test for R^2 does not show autocorrelation at 5% level between the current and past standardized squared residuals (variance).
+* The **conditional variance** equation seems to be complete, however the ACF plot of residuals indicates that we may still improve the model by adding AR components in the **mean** equation.
+
+mu is less significant than other parameters, let's try without mu: *(just for fun)*
+
+### GARCH(1,1) - without mu
+
+```{r}
+k.garch11a <- garchFit(~garch(1, 1),
+                      data = portfolio$PORTFOLIO_r,
+                      include.mean = FALSE,
+                      cond.dist = "norm", 
+                      trace = FALSE) 
+summary(k.garch11a)
+
+plot(k.garch11a, which = 10)
+plot(k.garch11a, which = 11)
+```
+
+* All parameters are significant.
+* The Ljung-Box test for R^2 does not show autocorrelation at 5% level between the current and past standardized squared residuals (variance).
+* ACF for R^2 looks much better.
+
+### AR(5)-GARCH(1,1)
+```{r}
+k.ar5garch11 <- garchFit(~arma(5, 0) + garch(1, 1),
+                         data = portfolio$PORTFOLIO_r,
+                         include.mean = TRUE,
+                         cond.dist = "norm",
+                         trace = FALSE)
+summary(k.ar5garch11)
+plot(k.ar5garch11, which = 10)
+plot(k.ar5garch11, which = 11)
+```
+* Except AR2,AR3,AR4,AR5, other parameters are significant.
+* The Ljung-box test for R^2 shows there is no more autocorrelation between the current and past standardized squared residuals. Similarly, there is no autocorrelation among returns after adding AR part now.
+* Both ACF figures show no significant lags.
+
+Since moast of AR parameters are insignificant, let's try simplier version:
+
+### AR(1)-GARCH(1,1)
+```{r}
+k.ar1garch11 <- garchFit(~arma(1, 0) + garch(1, 1),
+                         data = portfolio$PORTFOLIO_r,
+                         include.mean = TRUE,
+                         cond.dist = "norm",
+                         trace = FALSE)
+summary(k.ar1garch11)
+plot(k.ar1garch11, which = 10)
+plot(k.ar1garch11, which = 11)
+```
+
+* All parameters are significant.
+* The Ljung-box test for R^2 shows there is no more autocorrelation between the current and past standardized squared residuals. Similarly, there is no autocorrelation among returns after adding AR part now.
+* Both ACF figures show no significant lags.
+
+### AR(1)-ARCH(10)
+```{r}
+tic()
+k.ar1arch10 <- garchFit(~arma(1, 0) + garch(10, 0),
+                        data = portfolio$PORTFOLIO_r,
+                        include.mean = TRUE,
+                        cond.dist = "norm",
+                        trace = FALSE)
+toc()
+
+summary(k.ar1arch10)
+plot(k.ar1arch10, which = 10)
+plot(k.ar1arch10, which = 11)
+```
+
+* All parameters are significant.
+* The Ljung-box test for R^2 shows there is no more autocorrelation between the current and past standardized squared residuals. Similarly, there is no autocorrelation among returns after adding AR part now.
+* Both ACF figures show no significant lags.
+
+### Result: ARCH vs GARCH
+
+Let's compare the models using above mentioned fucntion:
+
+```{r}
+compare_ICs_GARCH(c("k.arch1", 
+                    "k.arch1a", 
+                    "k.arch5", 
+                    "k.arch10", 
+                    "k.garch11", 
+                    "k.garch11a",
+                    "k.ar5garch11",
+                    "k.ar1garch11", 
+                    "k.ar1arch10"))
+```
+
+The comparison shows that 8th - **AR(1)-GARCH(1,1)** is the best model among others. 
+
+I will use this model for other GARCH extensions. 
+
+Let's turn the page for new chapter! ^.^
+
+# GARCH extensions
+
+## EGARCH model
+
+Let's define a model specification:
+
+### AR(1)-EGARCH(1,1)
