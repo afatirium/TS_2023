@@ -197,7 +197,7 @@ tibble(r = as.numeric(portfolio$PORTFOLIO_r)) %>%
   stat_function(fun = dnorm,colour="blue",
                 args = list(mean = mean(portfolio$PORTFOLIO_r), 
                             sd = sd(portfolio$PORTFOLIO_r))) +
-  theme_dark() + 
+  theme_light() + 
   labs(
     title = paste("Density of the Portfolio log-returns"), 
     y = "", x = "",

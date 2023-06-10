@@ -1,16 +1,18 @@
 ---
 title: "TSA Final project"
-subtitle: "Estimating Value-at-Risk of a Portfolio with GARCH-Fmaliy models"
 author: "Afet Ibadova"
 date: "10/06/2023"
-output: 
+output:
   html_document:
     theme: spacelab
     highlight: tango
-    toc: true
+    toc: yes
     toc_float:
-      collapsed: false
-      smooth_scroll: true
+      collapsed: no
+      smooth_scroll: yes
+  pdf_document:
+    toc: yes
+subtitle: "Estimating Value-at-Risk of a Portfolio with GARCH-Fmaliy models"
 ---
 
 ```{r setup, include=FALSE}
@@ -159,7 +161,7 @@ tail (portfolio)
 head(portfolio)
 ```
 
-After limiting the timeframe, I have missing values, stil... I assume that these missing values exist because of non-work days. Let's fill the null values with the previous values.
+After limiting the timeframe, I have missing values, still... I assume that these missing values exist because of non-work days. The main reason is thedifferences of public holidays across the countries. Let's fill the null values with the previous values, assuming that if it is non-work days, the price doesn't change.
 
 ```{r}
 portfolio <- na.locf(portfolio)
@@ -184,7 +186,7 @@ head(portfolio)
 tail(portfolio)
 ```
 
-All Missing values are cleaned. Let's continue \^.\^
+All Missing values are cleaned. Let's continue 🥳
 
 ## Adding log return of index seperatedly and applying weight
 
@@ -245,7 +247,7 @@ tibble(r = as.numeric(portfolio$PORTFOLIO_r)) %>%
   stat_function(fun = dnorm,colour="blue",
                 args = list(mean = mean(portfolio$PORTFOLIO_r), 
                             sd = sd(portfolio$PORTFOLIO_r))) +
-  theme_dark() + 
+  theme_light() + 
   labs(
     title = paste("Density of the Portfolio log-returns"), 
     y = "", x = "",
@@ -267,7 +269,7 @@ jarque.bera.test(portfolio$PORTFOLIO_r)
 
 3\. The plot is leptokurtosis, "heavy tails" and higher peak in mean
 
-4\. According to the JB test, we reject the null hypothesis. The null hypothesis is a joint hypothesis of the skewness being zero and the excess kurtosis being zero.
+4\. According to the JB test, we reject the null hypothesis about normality. The null hypothesis is a joint hypothesis of the skewness being zero and the excess kurtosis being zero.
 
 # ARCH Test
 
@@ -352,6 +354,8 @@ The parameters are denoted by the following symbols:
 -   alpha1 - arch1 parameter in the variance equation
 
 If the intercept in the mean equation of the model above is not significant at 5% level, we can drop it.
+
+Let's drop it.
 
 ### ARCH(1) - without mu
 
@@ -555,6 +559,8 @@ k.ar1egarch11 <- ugarchfit(spec = spec,
 k.ar1egarch11
 ```
 
+
+
 ```{r}
 
 plot(k.ar1egarch11, which = 3)
@@ -726,6 +732,6 @@ compare_ICs_ugarchfit(c("k.ar1egarch11",
 
 According to the comparison, last model, ***AR(1)-EGARCH-m-st(1,1)*** is the best model.
 
-Let's turn page to the new chapter ^.^
+Let's turn page to the new chapter 🍀
 
 # VaR (Value at risk)
