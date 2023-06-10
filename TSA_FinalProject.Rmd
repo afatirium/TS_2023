@@ -533,6 +533,7 @@ Let's turn the page for new chapter! ^.^
 Let's define a model specification:
 
 ### AR(1)-EGARCH(1,1)
+
 ```{r}
 spec <- ugarchspec(# variance equation
     variance.model = list(model = "eGARCH", 
@@ -560,6 +561,7 @@ plot(k.ar1egarch11, which = 3)
 plot(k.ar1egarch11, which = 11)
 plot(k.ar1egarch11, which = 12)
 ```
+
 ### AR(1)-EGARCH(1,1) without mu
 
 ```{r}
@@ -576,19 +578,21 @@ speca <- ugarchspec(# variance equation
 k.ar1egarch11a <- ugarchfit(spec = spec, 
                            data = portfolio$PORTFOLIO_r)
 ```
+
 Result:
+
 ```{r}
 k.ar1egarch11a
 ```
 
-plot(k.ar1egarch11a, which = 3)
-plot(k.ar1egarch11a, which = 11)
-plot(k.ar1egarch11a, which = 12)
+plot(k.ar1egarch11a, which = 3) plot(k.ar1egarch11a, which = 11) plot(k.ar1egarch11a, which = 12)
 
-## The GARCH-st model 
+## The GARCH-st model
+
 ### AR(1) - GARCH-st(1,1)
 
 Let's first define a model specification:
+
 ```{r}
 spec <- ugarchspec(# variance equation
   variance.model = list(model = "sGARCH", 
@@ -678,12 +682,12 @@ plot(k.ar1garchm11a, which = 11)
 plot(k.ar1garchm11a, which = 12)
 ```
 
-
 ## The EGARCH in mean-t model
 
 ### AR(1)-EGARCH-m-st(1,1)
 
 Let's first define the model specification:
+
 ```{r}
 spec <- ugarchspec(# variance equation
   variance.model = list(model = "eGARCH", 
@@ -709,7 +713,6 @@ plot(k.ar1egarchmt11, which = 11)
 plot(k.ar1egarchmt11, which = 12)
 ```
 
-
 # Comparison
 
 ```{r}
@@ -720,8 +723,9 @@ compare_ICs_ugarchfit(c("k.ar1egarch11",
                         "k.ar1garchm11a",
                         "k.ar1egarchmt11"))
 ```
-According to the comparison, last model, AR(1)-EGARCH-m-st(1,1) is the best model.
 
-Let's turn page to the new chapter ^.^ 
+According to the comparison, last model, ***AR(1)-EGARCH-m-st(1,1)*** is the best model.
+
+Let's turn page to the new chapter ^.^
 
 # VaR (Value at risk)
