@@ -805,28 +805,30 @@ Let's turn page to the new chapter 🍀
  Choosing in-sample period:
  
 ```{r}
-portfolio_VaR <- portfolio["2018/2021",]
-head(portfolio_VaR)
+portfolio_IS <- portfolio["2018/2021",]
+head(portfolio_IS)
 ```
 
 Standardization of returns
-```{r}
-portfolio_VaR$rstd <- (portfolio_VaR$PORTFOLIO_r - mean(portfolio_VaR$PORTFOLIO_r, na.rm = T)) /
-  sd(portfolio_VaR$PORTFOLIO_r ,na.rm = T)
 
-tail(portfolio_VaR)
-head(portfolio_VaR)
+```{r}
+portfolio_IS$rstd <- (portfolio_IS$PORTFOLIO_r - mean(portfolio_IS$PORTFOLIO_r, na.rm = T)) /
+  sd(portfolio_IS$PORTFOLIO_r ,na.rm = T)
+
+tail(portfolio_IS)
+
 ```
 
 ```{r}
-basicStats(portfolio_VaR$rstd)
+basicStats(portfolio_IS$rstd)
 ```
 
 Negative skewness, and high kurtosis
 
 1% empirical quantile
+
 ```{r}
-q01 <- quantile(portfolio_VaR$rstd, 0.01, na.rm = T)
+q01 <- quantile(portfolio_IS$rstd, 0.01, na.rm = T)
 q01
 ```
 
@@ -844,8 +846,9 @@ spec <- ugarchspec(# variance equation
   distribution.model = "std") # std = t-Student
 
 #Estimating
-portfoio.ar1egarchmt11 <- ugarchfit(spec = spec, data = portfolio_VaR$PORTFOLIO_r)
+portfoio.ar1egarchmt11 <- ugarchfit(spec = spec, data = portfolio_IS$PORTFOLIO_r)
 ```
+
 ```{r}
 # Plot
 plot(portfoio.ar1egarchmt11, which = 10)
@@ -863,20 +866,20 @@ head(portfoio.ar1egarchmt11@fit$sigma)
 
 ```{r}
 
-portfolio_VaR$VaR <- q01 * portfoio.ar1egarchmt11@fit$sigma
-tail(portfolio_VaR)
-head(portfolio_VaR)
+portfolio_IS$VaR <- q01 * portfoio.ar1egarchmt11@fit$sigma
+tail(portfolio_IS)
+head(portfolio_IS)
 ```
 
 Plot of returns vs value-at-risk
 ```{r}
 
-plot(portfolio_VaR$PORTFOLIO_r, 
+plot(portfolio_IS$PORTFOLIO_r, 
      col = "blue", lwd = 1, type = 'l', 
      ylim = c(-0.1, 0.1),
      main = "Plot of returns vs value-at-risk")
 abline(h = 0, lty = 2)
-lines(portfolio_VaR$VaR, type = 'l', col = "green")
+lines(portfolio_IS$VaR, type = 'l', col = "green")
 ```
 
 ## VaR Out-of-sample period
@@ -884,31 +887,33 @@ lines(portfolio_VaR$VaR, type = 'l', col = "green")
 Choosing VaR in the Oot-of-Sample(OS) period:
 
 ```{r}
-portfolio_OS <- portfolio["2022",]
+portfolio_OS <- portfolio["2022/2022",]
 head(portfolio_OS)
 ```
 
-VaR OS calculation
+Standardization of returns
+
 ```{r}
 
 portfolio_OS$rstd <- (portfolio_OS$PORTFOLIO_r - mean(portfolio_OS$PORTFOLIO_r, na.rm = T)) /
   sd(portfolio_OS$PORTFOLIO_r ,na.rm = T)
 
 tail(portfolio_OS)
-head(portfolio_OS)
+
 ```
 
 1% empirical quantile
+
 ```{r}
-q01 <- quantile(portfolio_VaR$rstd, 0.01, na.rm = T)
+q01 <- quantile(portfolio_IS$rstd, 0.01, na.rm = T)
 ```
 
 ***Estimating***
+
 ```{r}
 portfolio_OS.ar1egarchmt11 <- ugarchfit(spec = spec, data = portfolio_OS$PORTFOLIO_r)
 ```
 
-Plot
 ```{r}
 plot(portfolio_OS.ar1egarchmt11, which = 10)
 plot(portfolio_OS.ar1egarchmt11, which = 11)

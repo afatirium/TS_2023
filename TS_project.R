@@ -711,7 +711,7 @@ abline(h = unconditional_sigma, col = "red")
 #########################
 
 ## VaR in the Oot-of-Sample(OS) period
-portfolio_OS <- portfolio["2022",]
+portfolio_OS <- portfolio["2022/2022",]
 head(portfolio_OS)
 
 ###VaR OS calculation
