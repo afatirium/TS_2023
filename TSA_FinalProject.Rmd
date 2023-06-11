@@ -12,7 +12,7 @@ output:
       smooth_scroll: yes
   pdf_document:
     toc: yes
-subtitle: "Estimating Value-at-Risk of a Portfolio with GARCH-Fmaliy models"
+subtitle: "Estimating Value-at-Risk of a Portfolio with GARCH-Family models"
 ---
 
 ```{r setup, include=FALSE}
@@ -43,7 +43,6 @@ library(fGarch) # e.g. garchFit()
 library(quantmod)
 library(rvest)
 library(lubridate)
-library(BatchGetSymbols)
 library(graphics)
 library(tictoc)
 
@@ -559,7 +558,19 @@ k.ar1egarch11 <- ugarchfit(spec = spec,
 k.ar1egarch11
 ```
 
+-   Except mu, other parameters are significant.
 
+-   alpha1 is the asymmetry term of EGARCH model (measuring the leverage effect) and it is negative. So the asymmetry is found.
+
+-   No further autocorrelation in R and R\^2.
+
+-   The Nyblom stability test verifies the null that all parameters or each parameter separately are stable over time (no structural breaks in the model). If test statistic is smaller than the critical value, the null isn't rejected.
+
+    So here we cannot reject the stability jointly (1.1442 \< 1.68), and for any parameter (stat \< 0.47).
+
+-   The Sign Bias Test verifies the null hypothesis if there is still some asymmetric reaction of variance of residuals to shocks. If null not rejected - the asymmetry has been captured correctly in the estimated model. The model does not require higher order.
+
+-   The Adjusted Pearson Goodness-of-Fit test statistics assess the adequacy of the GARCH model in capturing the characteristics of the data. With p_value \< 0.05, we reject the null hypothesis.
 
 ```{r}
 
@@ -567,6 +578,8 @@ plot(k.ar1egarch11, which = 3)
 plot(k.ar1egarch11, which = 11)
 plot(k.ar1egarch11, which = 12)
 ```
+
+-   The News Impact curve shows the asymmetric effect of shocks, since there is no effect when ϵt−1 is positive but a large effect when the shock is negative.
 
 ### AR(1)-EGARCH(1,1) without mu
 
@@ -581,7 +594,7 @@ speca <- ugarchspec(# variance equation
 
 # and estimate the model:
 
-k.ar1egarch11a <- ugarchfit(spec = spec, 
+k.ar1egarch11a <- ugarchfit(spec = speca, 
                            data = portfolio$PORTFOLIO_r)
 ```
 
@@ -591,9 +604,15 @@ Result:
 k.ar1egarch11a
 ```
 
-plot(k.ar1egarch11a, which = 3) plot(k.ar1egarch11a, which = 11) plot(k.ar1egarch11a, which = 12)
+```{r}
+plot(k.ar1egarch11a, which = 3) 
+plot(k.ar1egarch11a, which = 11) 
+plot(k.ar1egarch11a, which = 12)
+```
 
-## The GARCH-st model
+-   Almost the same result with the previous model, just without mu
+
+## The GARCH-t model
 
 ### AR(1) - GARCH-st(1,1)
 
@@ -616,6 +635,19 @@ k.ar1garcht11 <- ugarchfit(spec = spec,
                            data = portfolio$PORTFOLIO_r)
 # Result:
 k.ar1garcht11
+```
+
+-   The shape paramters denotes the number of degrees of freedom for the t-Student distribution. In this case it equals to 6.011
+
+-   According to Ljung-Box Test, there is no autocorellation, and according to ARCH LM test, there is no ARCH effect.
+
+-   Nyblom stability test: if test statistic is greater than the critical value the null is rejected. The null hypothesis is about that all parameters or each parameter separately are stable over time (no structural breaks in the model). So here we reject the stability jointly (27 \> 1.68), but cannot reject for any parameter (stat \< 0.47), except omega.
+
+-   The Sign Bias Test verifies the null hypothesis if there is still some asymmetric reaction of variance of residuals to shocks. So the null is rejected the asymmetry has not been captured correctly in the estimated model.
+
+-   The Adjusted Pearson Goodness-of-Fit test statistics assess the adequacy of the GARCH model in capturing the characteristics of the data.
+
+```{r}
 
 plot(k.ar1garcht11, which = 3)
 plot(k.ar1garcht11, which = 11)
@@ -651,11 +683,15 @@ k.ar1garchm11 <- ugarchfit(spec = spec,
 # Let's examine the results:
 
 k.ar1garchm11
+```
 
+```{r}
 plot(k.ar1garchm11, which = 3)
 plot(k.ar1garchm11, which = 11)
 plot(k.ar1garchm11, which = 12)
 ```
+
+**mu** is insignificant, let's remove mu.
 
 ### AR(1)-GARCH-m(1,1) without mu
 
@@ -682,6 +718,23 @@ k.ar1garchm11a <- ugarchfit(spec = spec,
 # Model summary:
 
 k.ar1garchm11a
+```
+
+-   Except omega, all parameters are significant.
+
+-   There is no ARCH effect.
+
+-   Ljung-Box Test shows no autocorrelation.
+
+-   The Nyblom stability test verifies the null that all parameters or each parameter separately are stable over time (no structural breaks in the model). If test statistic is smaller than the critical value, the null isn't rejected.
+
+So here we cannot reject the stability jointly (1.093 < 1.68 1.68), and for any parameter (stat < 0.47).
+
+-   The Sign Bias Test verifies the null hypothesis if there is still some asymmetric reaction of variance of residuals to shocks. So the null is rejected, the asymmetry has not been captured correctly in the estimated model.
+
+-   The Adjusted Pearson Goodness-of-Fit test statistics assess the adequacy of the GARCH model in capturing the characteristics of the data. With p_value < 0.05, we reject the null hypothesis.
+
+```{r}
 
 plot(k.ar1garchm11a, which = 3)
 plot(k.ar1garchm11a, which = 11)
@@ -713,7 +766,15 @@ k.ar1egarchmt11 <- ugarchfit(spec = spec,
 # The model summary:
 
 k.ar1egarchmt11
+```
+* All parameteres are significant.
+* There is no Autocorellation - Ljung-Box Test
+* No Arch effect
+* Nyblom stability test 1.86 < 2.11
+* The Sign Bias Test verifies the null hypothesis if there is still some asymmetric reaction of variance of residuals to shocks. If null not rejected - the asymmetry has been captured correctly in the estimated model. The model does not require higher order.
+* The Adjusted Pearson Goodness-of-Fit test statistics assess the adequacy of the GARCH model in capturing the characteristics of the data. With p_value > 0.05, we do not reject the null hypothesis.
 
+```{r}
 plot(k.ar1egarchmt11, which = 3)
 plot(k.ar1egarchmt11, which = 11)
 plot(k.ar1egarchmt11, which = 12)

@@ -473,7 +473,7 @@ speca <- ugarchspec(# variance equation
 
 # and estimate the model:
 
-k.ar1egarch11a <- ugarchfit(spec = spec, 
+k.ar1egarch11a <- ugarchfit(spec = speca, 
                            data = portfolio$PORTFOLIO_r)
 
 #Result:
