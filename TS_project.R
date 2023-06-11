@@ -612,7 +612,8 @@ compare_ICs_ugarchfit(c("k.ar1egarch11",
 # Let's turn page to the new chapter ^.^ 
 
 # VaR (Value at risk)
-## In-sample period
+
+## Choosing in-sample period
 portfolio_VaR <- portfolio["2018/2021",]
 head(portfolio_VaR)
 
@@ -634,4 +635,44 @@ q01
 
 #For comparison: 1% quantile of standard normal distribution
 qnorm(0.01, 0, 1)
+
+#Model:
+
+### AR(1)-EGARCH-m-st(1,1)
+
+spec <- ugarchspec(# variance equation
+  variance.model = list(model = "eGARCH", 
+                        garchOrder = c(1, 1)),
+  # mean equation
+  mean.model = list(armaOrder = c(1, 0), 
+                    include.mean = TRUE,
+                    archm = TRUE, archpow = 1), 
+  # assumed distribution of errors
+  distribution.model = "std") # std = t-Student
+
+#Estimating
+portfoio.ar1egarchmt11 <- ugarchfit(spec = spec, data = portfolio_VaR$PORTFOLIO_r)
+# Plot
+plot(portfoio.ar1egarchmt11, which = 10)
+plot(portfoio.ar1egarchmt11, which = 11)
+
+## VaR in the IN-SAMPLE period
+str(portfoio.ar1egarchmt11)
+
+head(portfoio.ar1egarchmt11@fit$sigma)
+
+### Calculating value-at-risk (VaR):
+portfolio_VaR$VaR <- q01 * portfoio.ar1egarchmt11@fit$sigma
+tail(portfolio_VaR)
+head(portfolio_VaR)
+
+### Plot of returns vs value-at-risk
+
+plot(portfolio_VaR$PORTFOLIO_r, 
+     col = "blue", lwd = 1, type = 'l', 
+     ylim = c(-0.1, 0.1),
+     main = "Plot of returns vs value-at-risk")
+abline(h = 0, lty = 2)
+lines(portfolio_VaR$VaR, type = 'l', col = "green")
+
 
