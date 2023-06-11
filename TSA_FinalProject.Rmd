@@ -25,6 +25,16 @@ options(scipen = 10)
 
 # Introduction
 
+The aim of the project is to estimate Value-at-Risk (VaR) of a portfolio consisting of five financial instruments on the basis of two GARCH-family models. The portfolio will be forecasted consist of 5 financial instuments, including SP500, DAX, WIG20, KOSPI200, NIKKEI225.
+
+The in-sample period should start on 2018-01-01. The out-of-sample period should last for 365 days and should start on 2022-01-01.
+
+Additionally, I want to mention that, I am inspired from two article for this project:
+
+1.  Comparison of semi-parametric and benchmark value-at-risk models in several time periods with different volatility levels - Mateusz Buczyński, Marcin Chlebus - [link](https://sciendo.com/article/10.2478/fiqf-2018-0013)
+
+2.  Forecasting the volatility of stock price index: A hybrid model integrating LSTM with multiple GARCH-type models - Ha Young Kim, Chang Hyun Won - [link](https://www.sciencedirect.com/science/article/abs/pii/S0957417418301416)
+
 ## Packages and data
 
 Lets load all needed packages
@@ -728,11 +738,11 @@ k.ar1garchm11a
 
 -   The Nyblom stability test verifies the null that all parameters or each parameter separately are stable over time (no structural breaks in the model). If test statistic is smaller than the critical value, the null isn't rejected.
 
-So here we cannot reject the stability jointly (1.093 < 1.68 1.68), and for any parameter (stat < 0.47).
+So here we cannot reject the stability jointly (1.093 \< 1.68 1.68), and for any parameter (stat \< 0.47).
 
 -   The Sign Bias Test verifies the null hypothesis if there is still some asymmetric reaction of variance of residuals to shocks. So the null is rejected, the asymmetry has not been captured correctly in the estimated model.
 
--   The Adjusted Pearson Goodness-of-Fit test statistics assess the adequacy of the GARCH model in capturing the characteristics of the data. With p_value < 0.05, we reject the null hypothesis.
+-   The Adjusted Pearson Goodness-of-Fit test statistics assess the adequacy of the GARCH model in capturing the characteristics of the data. With p_value \< 0.05, we reject the null hypothesis.
 
 ```{r}
 
@@ -767,15 +777,18 @@ k.ar1egarchmt11 <- ugarchfit(spec = spec,
 
 k.ar1egarchmt11
 ```
-* All parameteres are significant.
-* There is no Autocorellation - Ljung-Box Test
-* No Arch effect
 
-* The Nyblom stability test verifies the null that all parameters or each parameter separately are stable over time (no structural breaks in the model). If test statistic is smaller than the critical value, the null isn't rejected. So here we cannot reject the stability jointly (1.86 < 2.11), and for other parameter, except omega and beta1 (stat < 0.47) 
+-   All parameteres are significant.
 
-* The Sign Bias Test verifies the null hypothesis if there is still some asymmetric reaction of variance of residuals to shocks. If null not rejected - the asymmetry has been captured correctly in the estimated model. The model does not require higher order.
+-   There is no Autocorellation - Ljung-Box Test
 
-* The Adjusted Pearson Goodness-of-Fit test statistics assess the adequacy of the GARCH model in capturing the characteristics of the data. With p_value > 0.05, we do not reject the null hypothesis.
+-   No Arch effect
+
+-   The Nyblom stability test verifies the null that all parameters or each parameter separately are stable over time (no structural breaks in the model). If test statistic is smaller than the critical value, the null isn't rejected. So here we cannot reject the stability jointly (1.86 \< 2.11), and for other parameter, except omega and beta1 (stat \< 0.47)
+
+-   The Sign Bias Test verifies the null hypothesis if there is still some asymmetric reaction of variance of residuals to shocks. If null not rejected - the asymmetry has been captured correctly in the estimated model. The model does not require higher order.
+
+-   The Adjusted Pearson Goodness-of-Fit test statistics assess the adequacy of the GARCH model in capturing the characteristics of the data. With p_value \> 0.05, we do not reject the null hypothesis.
 
 ```{r}
 plot(k.ar1egarchmt11, which = 3)
@@ -802,8 +815,8 @@ Let's turn page to the new chapter 🍀
 
 ## VaR In-Sample period
 
- Choosing in-sample period:
- 
+Choosing in-sample period:
+
 ```{r}
 portfolio_IS <- portfolio["2018/2021",]
 head(portfolio_IS)
@@ -846,32 +859,32 @@ spec <- ugarchspec(# variance equation
   distribution.model = "std") # std = t-Student
 
 #Estimating
-portfoio.ar1egarchmt11 <- ugarchfit(spec = spec, data = portfolio_IS$PORTFOLIO_r)
+portfolio_IS.ar1egarchmt11 <- ugarchfit(spec = spec, data = portfolio_IS$PORTFOLIO_r)
 ```
 
 ```{r}
 # Plot
-plot(portfoio.ar1egarchmt11, which = 10)
-plot(portfoio.ar1egarchmt11, which = 11)
+plot(portfolio_IS.ar1egarchmt11, which = 10)
+plot(portfolio_IS.ar1egarchmt11, which = 11)
 ```
 
 **Fitting model**
 
 ```{r}
-head(portfoio.ar1egarchmt11@fit$sigma)
+head(portfolio_IS.ar1egarchmt11@fit$sigma)
 ```
-
 
 **Calculating value-at-risk (VaR):**
 
 ```{r}
 
-portfolio_IS$VaR <- q01 * portfoio.ar1egarchmt11@fit$sigma
+portfolio_IS$VaR <- q01 * portfolio_IS.ar1egarchmt11@fit$sigma
 tail(portfolio_IS)
 head(portfolio_IS)
 ```
 
 Plot of returns vs value-at-risk
+
 ```{r}
 
 plot(portfolio_IS$PORTFOLIO_r, 
