@@ -770,8 +770,11 @@ k.ar1egarchmt11
 * All parameteres are significant.
 * There is no Autocorellation - Ljung-Box Test
 * No Arch effect
-* Nyblom stability test 1.86 < 2.11
+
+* The Nyblom stability test verifies the null that all parameters or each parameter separately are stable over time (no structural breaks in the model). If test statistic is smaller than the critical value, the null isn't rejected. So here we cannot reject the stability jointly (1.86 < 2.11), and for other parameter, except omega and beta1 (stat < 0.47) 
+
 * The Sign Bias Test verifies the null hypothesis if there is still some asymmetric reaction of variance of residuals to shocks. If null not rejected - the asymmetry has been captured correctly in the estimated model. The model does not require higher order.
+
 * The Adjusted Pearson Goodness-of-Fit test statistics assess the adequacy of the GARCH model in capturing the characteristics of the data. With p_value > 0.05, we do not reject the null hypothesis.
 
 ```{r}
