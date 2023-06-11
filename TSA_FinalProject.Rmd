@@ -799,3 +799,4 @@ According to the comparison, last model, ***AR(1)-EGARCH-m-st(1,1)*** is the bes
 Let's turn page to the new chapter 🍀
 
 # VaR (Value at risk)
+

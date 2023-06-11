@@ -612,3 +612,26 @@ compare_ICs_ugarchfit(c("k.ar1egarch11",
 # Let's turn page to the new chapter ^.^ 
 
 # VaR (Value at risk)
+## In-sample period
+portfolio_VaR <- portfolio["2018/2021",]
+head(portfolio_VaR)
+
+##Calculating value-at-risk (VaR)
+
+### Standardization of returns
+portfolio_VaR$rstd <- (portfolio_VaR$PORTFOLIO_r - mean(portfolio_VaR$PORTFOLIO_r, na.rm = T)) /
+  sd(portfolio_VaR$PORTFOLIO_r ,na.rm = T)
+
+tail(portfolio_VaR)
+head(portfolio_VaR)
+
+basicStats(portfolio_VaR$rstd)
+# Negative skewness, and high kurtosis
+
+#1% empirical quantile
+q01 <- quantile(portfolio_VaR$rstd, 0.01, na.rm = T)
+q01
+
+#For comparison: 1% quantile of standard normal distribution
+qnorm(0.01, 0, 1)
+
