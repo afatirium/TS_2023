@@ -638,7 +638,7 @@ qnorm(0.01, 0, 1)
 
 #Model:
 
-### AR(1)-EGARCH-m-st(1,1)
+### AR(1)-EGARCH-m-st(1,1) - VaR
 
 spec <- ugarchspec(# variance equation
   variance.model = list(model = "eGARCH", 
@@ -675,4 +675,77 @@ plot(portfolio_VaR$PORTFOLIO_r,
 abline(h = 0, lty = 2)
 lines(portfolio_VaR$VaR, type = 'l', col = "green")
 
+### In how many days losses were higher than the assumed value-at-risk?
+sum(portfolio_VaR$PORTFOLIO_r < portfolio_VaR$VaR) / length(portfolio_VaR$VaR)
 
+## VaR in the OUT-OF-SAMPLE period
+
+### Plot of conditional standard deviation and its on-day ahead prediction.
+plot(ugarchforecast(portfoio.ar1egarchmt11, n.ahead = 1), which = 3)
+
+### Plot of conditional standard deviation forecasts in the long run.
+plot(ugarchforecast(portfoio.ar1egarchmt11, n.ahead = 200), which = 3)
+
+### We can combine them with the in-sample estimation of conditional standard deviation
+sigma.forecast.longrun <- ugarchforecast(portfoio.ar1egarchmt11, n.ahead = 500)
+
+omega <- portfoio.ar1egarchmt11@model$pars["omega", 1]
+alpha1 <- portfoio.ar1egarchmt11@model$pars["alpha1", 1]
+beta1 <- portfoio.ar1egarchmt11@model$pars["beta1", 1]
+
+###################problem
+
+unconditional_sigma <- 
+  sqrt(
+    abs(portfoio.ar1egarchmt11@model$pars["omega", 1]) / 
+      (1 - 
+         portfoio.ar1egarchmt11@model$pars["alpha1", 1] -
+         portfoio.ar1egarchmt11@model$pars["beta1", 1]))
+
+plot(
+  c(as.numeric(portfoio.ar1egarchmt11@fit$sigma),
+    as.numeric(sigma.forecast.longrun@forecast$sigmaFor)),
+  type = "l",
+  ylab = "sigma")
+abline(h = unconditional_sigma, col = "red")
+#########################
+
+## VaR in the Oot-of-Sample(OS) period
+portfolio_OS <- portfolio["2022",]
+head(portfolio_OS)
+
+###VaR OS calculation
+portfolio_OS$rstd <- (portfolio_OS$PORTFOLIO_r - mean(portfolio_OS$PORTFOLIO_r, na.rm = T)) /
+  sd(portfolio_OS$PORTFOLIO_r ,na.rm = T)
+
+tail(portfolio_OS)
+head(portfolio_OS)
+
+#1% empirical quantile
+q01 <- quantile(portfolio_VaR$rstd, 0.01, na.rm = T)
+
+#Estimating
+portfolio_OS.ar1egarchmt11 <- ugarchfit(spec = spec, data = portfolio_OS$PORTFOLIO_r)
+
+# Plot
+plot(portfolio_OS.ar1egarchmt11, which = 10)
+plot(portfolio_OS.ar1egarchmt11, which = 11)
+
+## VaR in the IN-SAMPLE period
+str(portfolio_OS.ar1egarchmt11)
+
+head(portfolio_OS.ar1egarchmt11@fit$sigma)
+
+### Calculating value-at-risk (VaR):
+portfolio_OS$VaR <- q01 * portfolio_OS.ar1egarchmt11@fit$sigma
+tail(portfolio_OS)
+head(portfolio_OS)
+
+### Plot of returns vs value-at-risk
+
+plot(portfolio_OS$PORTFOLIO_r, 
+     col = "blue", lwd = 1, type = 'l', 
+     ylim = c(-0.1, 0.1),
+     main = "Plot of returns vs value-at-risk")
+abline(h = 0, lty = 2)
+lines(portfolio_OS$VaR, type = 'l', col = "green")
